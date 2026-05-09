@@ -23,7 +23,7 @@ The consensus tool orchestrates multiple AI models to provide diverse perspectiv
 
 ## Watch In Action
 
-The following is a hypothetical example designed to demonstrate how one consensus can be built upon another (via [continuation](../context-revival.md)). In this scenario, we start with a _blinded_ consensus, where one model is tasked with taking a **for** stance and another with an **against** stance. This approach allows us to see how each model evaluates a particular option relative to the alternative. We then conduct a second consensus — all initiated by a single prompt and orchestrated by Claude Code in this video — to gather each model’s final conclusions.
+The following is a hypothetical example designed to demonstrate how one consensus can be built upon another (via continuation threading). In this scenario, we start with a _blinded_ consensus, where one model is tasked with taking a **for** stance and another with an **against** stance. This approach allows us to see how each model evaluates a particular option relative to the alternative. We then conduct a second consensus — all initiated by a single prompt and orchestrated by Claude Code in this video — to gather each model’s final conclusions.
 
 <div style="center">
   

@@ -309,5 +309,5 @@ LOG_LEVEL=INFO
 ## Related Documentation
 
 - **[Advanced Usage Guide](advanced-usage.md)** - Advanced model usage patterns, thinking modes, and power user workflows
-- **[Context Revival Guide](context-revival.md)** - Conversation persistence and context revival across sessions
-- **[AI-to-AI Collaboration Guide](ai-collaboration.md)** - Multi-model coordination and conversation threading
+- **[Getting Started](getting-started.md)** - Installation and MCP client setup
+- **[Troubleshooting](troubleshooting.md)** - Common issues and fixes

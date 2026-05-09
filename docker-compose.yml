@@ -63,9 +63,9 @@ services:
           memory: 256M
           cpus: '0.25'
     
-    # Health check
+    # Health check: confirm the server module imports cleanly
     healthcheck:
-      test: ["CMD", "python", "/usr/local/bin/healthcheck.py"]
+      test: ["CMD", "python", "-c", "import server"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -282,10 +282,6 @@ Session 2: "Continue our RAG discussion with o3"
 → O3 receives the full history and reminds Claude of everything discussed
 ```
 
-**📖 [Read the complete Context Revival guide](context-revival.md)** for detailed examples, technical architecture, configuration options, and best practices.
-
-**See also:** [AI-to-AI Collaboration Guide](ai-collaboration.md) for multi-model coordination and conversation threading.
-
 ## Collaborative Workflows
 
 ### Design → Review → Implement

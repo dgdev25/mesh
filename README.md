@@ -67,10 +67,9 @@ All providers use the same `ModelResponse` format. **No code changes needed.** J
 
 ## Documentation
 
-- 📖 **[Setup Guide](docs/architecture/setup-guide.md)** — Installation, configuration, local testing
-- 🔌 **[API Reference](docs/architecture/api-reference.md)** — Provider interfaces, method signatures
-- 🛠️ **[Troubleshooting](docs/architecture/troubleshooting.md)** — Common issues and solutions
-- 🏗️ **[Architecture](docs/architecture/design.md)** — System design and data flow
+- 📖 **[Getting Started](docs/getting-started.md)** — Installation, MCP client setup, verification
+- ⚙️ **[Configuration](docs/configuration.md)** — Every environment variable, with defaults
+- 🛠️ **[Troubleshooting](docs/troubleshooting.md)** — Common issues and fixes
 
 ---
 
@@ -455,7 +454,6 @@ DISABLED_TOOLS=
 - **Auto model selection** - Claude picks the right AI for each task
 - **Multi-model workflows** - Chain different models in single conversations
 - **Conversation continuity** - Context preserved across tools and models
-- **[Context revival](docs/context-revival.md)** - Continue conversations even after context resets
 
 **Model Support**
 - **Three backends** — Gemini CLI, Codex CLI, and OpenRouter (HTTPS fallback)
@@ -494,12 +492,10 @@ DISABLED_TOOLS=
 ## Quick Links
 
 **📖 Documentation**
-- [Docs Overview](docs/index.md) - High-level map of major guides
 - [Getting Started](docs/getting-started.md) - Complete setup guide
+- [Configuration](docs/configuration.md) - Environment variables, defaults, restrictions
 - [Tools Reference](docs/tools/) - All tools with examples
 - [Advanced Usage](docs/advanced-usage.md) - Power user features
-- [Configuration](docs/configuration.md) - Environment variables, restrictions
-- [Adding Providers](docs/adding_providers.md) - Provider-specific setup (OpenAI, Azure, custom gateways)
 - [Model Ranking Guide](docs/model_ranking.md) - How intelligence scores drive auto-mode suggestions
 
 **🔧 Setup & Support**

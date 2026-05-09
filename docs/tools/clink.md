@@ -124,7 +124,7 @@ then codereview to verify the implementation"
 3. **Context forwarding** - Your prompt, files (as references), and conversation history are sent as part of the prompt
 4. **CLI processing** - Gemini (or other CLI) uses its own tools: web search, file access, thinking modes
 5. **Seamless return** - Results flow back into your conversation with full context preserved
-6. **Continuation support** - Future tools and models can reference Gemini's findings via [continuation support](../context-revival.md) within PAL.
+6. **Continuation support** - Future tools and models can reference Gemini's findings via Mesh's continuation threading.
 
 ## Best Practices
 
@@ -168,7 +168,6 @@ Ensure the relevant CLI is installed and configured:
 ## Related Guides
 
 - [Chat Tool](chat.md) - Direct model conversations
-- [Planner Tool](planner.md) - PAL's native planning workflows
+- [Planner Tool](planner.md) - Mesh's native planning workflows
 - [CodeReview Tool](codereview.md) - Structured code reviews
-- [Context Revival](../context-revival.md) - Continuing conversations across tools
 - [Advanced Usage](../advanced-usage.md) - Complex multi-tool workflows

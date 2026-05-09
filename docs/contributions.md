@@ -167,7 +167,7 @@ Imports must be organized by isort into these groups:
 ### 5. Specific Contribution Types
 
 #### Adding a New Provider
-See our detailed guide: [Adding a New Provider](./adding_providers.md)
+Provider plumbing now lives in `providers/` — extend `ModelProvider` (or `CliProvider` for subprocess-backed providers) and register the new type via `configure_providers()` in `server.py`.
 
 #### Adding a New Tool
 See our detailed guide: [Adding a New Tool](./adding_tools.md)

@@ -99,4 +99,4 @@ gh pr merge <pr-number>
 Install GitHub CLI: `brew install gh` (macOS) or visit https://cli.github.com for other platforms.
 
 ## Security & Configuration Tips
-Store API keys and provider URLs in `.env` or your MCP client config; never commit secrets or generated log artifacts. Use `run-server.sh` to regenerate environments and verify connectivity after dependency changes. When adding providers or tools, sanitize prompts and responses, document required environment variables in `docs/`, and update `claude_config_example.json` if new capabilities ship by default.
+Store API keys and provider URLs in `.env` or your MCP client config; never commit secrets or generated log artifacts. Use `run-server.sh` to regenerate environments and verify connectivity after dependency changes. When adding providers or tools, sanitize prompts and responses, document required environment variables in `docs/`, and update `examples/claude_config_*.json` if new capabilities ship by default.

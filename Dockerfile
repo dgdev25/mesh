@@ -65,16 +65,12 @@ RUN mkdir -p logs && chown -R meshuser:meshuser logs
 # Create tmp directory for container operations
 RUN mkdir -p tmp && chown -R meshuser:meshuser tmp
 
-# Copy health check script
-COPY --chown=meshuser:meshuser docker/scripts/healthcheck.py /usr/local/bin/healthcheck.py
-RUN chmod +x /usr/local/bin/healthcheck.py
-
 # Switch to non-root user
 USER meshuser
 
-# Health check configuration
+# Health check: confirm the server module imports cleanly
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python /usr/local/bin/healthcheck.py
+    CMD python -c "import server" || exit 1
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
