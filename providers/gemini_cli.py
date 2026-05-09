@@ -6,7 +6,7 @@ Gemini models are declared inline below.
 """
 
 import logging
-from typing import ClassVar, List, Optional
+from typing import ClassVar, Optional
 
 from .cli_base import CliProvider
 from .shared import ModelCapabilities, ModelResponse, ProviderType
@@ -82,8 +82,8 @@ class GeminiCliProvider(CliProvider):
         max_output_tokens: Optional[int] = None,
         system_prompt: Optional[str] = None,
         **kwargs,
-    ) -> List[str]:
-        args: List[str] = [self.cli_path, "generate"]
+    ) -> list[str]:
+        args: list[str] = [self.cli_path, "generate"]
         full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
         args.extend(["--prompt", full_prompt, "--model", model, "--temperature", str(temperature)])
         if max_output_tokens:

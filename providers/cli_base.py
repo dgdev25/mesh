@@ -4,7 +4,6 @@ import asyncio
 import logging
 import time
 from abc import abstractmethod
-from typing import List
 
 from .base import ModelProvider
 from .shared import ModelResponse
@@ -41,7 +40,7 @@ class CliProvider(ModelProvider):
         self.cli_path = cli_path
         self.timeout_s = timeout_s
 
-    async def _run_cli(self, args: List[str]) -> CliOutput:
+    async def _run_cli(self, args: list[str]) -> CliOutput:
         """Execute CLI command with subprocess and timeout protection.
 
         Collects full stdout/stderr and returns result or raises error.
@@ -152,7 +151,7 @@ class CliProvider(ModelProvider):
         """
 
     @abstractmethod
-    def _build_args(self, prompt: str, model: str, temperature: float, **kwargs) -> List[str]:
+    def _build_args(self, prompt: str, model: str, temperature: float, **kwargs) -> list[str]:
         """Build CLI arguments from request parameters.
 
         Subclasses must implement to map request params to CLI flags.

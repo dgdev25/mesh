@@ -754,7 +754,7 @@ setup_venv() {
                     print_error "Permission denied creating virtual environment"
                     echo ""
                     echo "Try running in a different directory:"
-                    echo "  cd ~ && git clone <repository-url> && cd mesh-mcp-server && ./run-server.sh"
+                    echo "  cd ~ && git clone <repository-url> && cd mesh && ./run-server.sh"
                     echo ""
                     exit 1
                 else
@@ -1067,11 +1067,8 @@ setup_env_file() {
     print_success "Created .env from .env.example"
 
     # Update API keys from environment if present
+    # Mesh is CLI-first; OpenRouter is the only HTTP provider.
     local api_keys=(
-        "GEMINI_API_KEY:your_gemini_api_key_here"
-        "OPENAI_API_KEY:your_openai_api_key_here"
-        "XAI_API_KEY:your_xai_api_key_here"
-        "DIAL_API_KEY:your_dial_api_key_here"
         "OPENROUTER_API_KEY:your_openrouter_api_key_here"
     )
 
@@ -1108,47 +1105,36 @@ migrate_env_file() {
     echo "  (Backup saved as .env.backup_*)"
 }
 
-# Check API keys and warn if missing (non-blocking)
+# Check provider availability and warn if missing (non-blocking).
+# Mesh requires at least one of: gemini CLI, codex CLI, or OPENROUTER_API_KEY.
 check_api_keys() {
-    local has_key=false
-    local api_keys=(
-        "GEMINI_API_KEY:your_gemini_api_key_here"
-        "OPENAI_API_KEY:your_openai_api_key_here"
-        "XAI_API_KEY:your_xai_api_key_here"
-        "DIAL_API_KEY:your_dial_api_key_here"
-        "OPENROUTER_API_KEY:your_openrouter_api_key_here"
-    )
+    local has_provider=false
 
-    for key_pair in "${api_keys[@]}"; do
-        local key_name="${key_pair%%:*}"
-        local placeholder="${key_pair##*:}"
-        local key_value="${!key_name:-}"
-
-        if [[ -n "$key_value" ]] && [[ "$key_value" != "$placeholder" ]]; then
-            print_success "$key_name configured"
-            has_key=true
-        fi
-    done
-
-    # Check custom API URL
-    if [[ -n "${CUSTOM_API_URL:-}" ]]; then
-        print_success "CUSTOM_API_URL configured: $CUSTOM_API_URL"
-        has_key=true
+    local openrouter_key="${OPENROUTER_API_KEY:-}"
+    if [[ -n "$openrouter_key" ]] && [[ "$openrouter_key" != "your_openrouter_api_key_here" ]]; then
+        print_success "OPENROUTER_API_KEY configured"
+        has_provider=true
     fi
 
-    if [[ "$has_key" == false ]]; then
-        print_warning "No API keys found in .env!"
+    if command -v gemini >/dev/null 2>&1; then
+        print_success "gemini CLI detected on PATH"
+        has_provider=true
+    fi
+    if command -v codex >/dev/null 2>&1; then
+        print_success "codex CLI detected on PATH"
+        has_provider=true
+    fi
+
+    if [[ "$has_provider" == false ]]; then
+        print_warning "No providers available!"
         echo ""
-        echo "The Python development environment will be set up, but you won't be able to use the MCP server until you add API keys."
+        echo "The Python development environment will be set up, but Mesh"
+        echo "won't function until at least one of these is available:"
+        echo "  - 'gemini' CLI installed and on PATH"
+        echo "  - 'codex' CLI installed and on PATH"
+        echo "  - OPENROUTER_API_KEY set in .env (HTTP fallback)"
         echo ""
-        echo "To add API keys, edit .env and add at least one:"
-        echo "  GEMINI_API_KEY=your-actual-key"
-        echo "  OPENAI_API_KEY=your-actual-key"
-        echo "  XAI_API_KEY=your-actual-key"
-        echo "  DIAL_API_KEY=your-actual-key"
-        echo "  OPENROUTER_API_KEY=your-actual-key"
-        echo ""
-        print_info "You can continue with development setup and add API keys later."
+        print_info "You can continue setup and configure providers later."
         echo ""
     fi
 
@@ -1195,14 +1181,11 @@ parse_env_variables() {
     # If no .env file or no valid vars, fall back to environment variables
     if [[ -z "$env_vars" ]]; then
         local api_keys=(
-            "GEMINI_API_KEY"
-            "OPENAI_API_KEY" 
-            "XAI_API_KEY"
-            "DIAL_API_KEY"
             "OPENROUTER_API_KEY"
-            "CUSTOM_API_URL"
-            "CUSTOM_API_KEY"
-            "CUSTOM_MODEL_NAME"
+            "OPENROUTER_ALLOWED_MODELS"
+            "GEMINI_CLI_PATH"
+            "CODEX_CLI_PATH"
+            "CLI_TIMEOUT_SECONDS"
             "DISABLED_TOOLS"
             "DEFAULT_MODEL"
             "LOG_LEVEL"
@@ -1626,7 +1609,7 @@ EOF
 # Check and update Gemini CLI configuration
 check_gemini_cli_integration() {
     local script_dir="$1"
-    local mesh_wrapper="$script_dir/mesh-mcp-server"
+    local mesh_wrapper="$script_dir/mesh"
 
     # Check if Gemini settings file exists
     local gemini_config="$HOME/.gemini/settings.json"
@@ -1721,7 +1704,7 @@ cd "$DIR"
 exec .mesh_venv/bin/python server.py "$@"
 EOF
         chmod +x "$mesh_wrapper"
-        print_success "Created mesh-mcp-server wrapper script"
+        print_success "Created mesh wrapper script"
     fi
 
     # Update Gemini settings
@@ -1867,12 +1850,12 @@ PY
 
         {
             echo ""
-            echo "[mcp_servers.pal]"
+            echo "[mcp_servers.mesh]"
             echo "command = \"bash\""
-            echo "args = [\"-c\", \"for p in \$(which uvx 2>/dev/null) \$HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \\\"\$p\\\" ] && exec \\\"\$p\\\" --from git+https://github.com/dgdev25/mesh.git mesh-mcp-server; done; echo 'uvx not found' >&2; exit 1\"]"
+            echo "args = [\"-c\", \"for p in \$(which uvx 2>/dev/null) \$HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \\\"\$p\\\" ] && exec \\\"\$p\\\" --from git+https://github.com/dgdev25/mesh.git mesh; done; echo 'uvx not found' >&2; exit 1\"]"
             echo "tool_timeout_sec = 1200"
             echo ""
-            echo "[mcp_servers.pal.env]"
+            echo "[mcp_servers.mesh.env]"
             echo "PATH = \"/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:\$HOME/.local/bin:\$HOME/.cargo/bin:\$HOME/bin\""
             if [[ -n "$env_vars" ]]; then
                 while IFS= read -r line; do
@@ -1892,12 +1875,12 @@ PY
             echo "Manual config location: $codex_config"
             echo "Add this configuration:"
 cat <<'CODExEOF'
-[mcp_servers.pal]
+[mcp_servers.mesh]
 command = "sh"
-args = ["-c", "exec \$(which uvx 2>/dev/null || echo uvx) --from git+https://github.com/dgdev25/mesh.git mesh-mcp-server"]
+args = ["-c", "exec \$(which uvx 2>/dev/null || echo uvx) --from git+https://github.com/dgdev25/mesh.git mesh"]
 tool_timeout_sec = 1200
 
-[mcp_servers.pal.env]
+[mcp_servers.mesh.env]
 PATH = "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:\$HOME/.local/bin:\$HOME/.cargo/bin:\$HOME/bin"
 
 [features]
@@ -1912,7 +1895,7 @@ CODExEOF
                     fi
                 done <<< "$env_vars"
             else
-                echo "GEMINI_API_KEY = \"your_gemini_api_key_here\""
+                echo "OPENROUTER_API_KEY = \"your_openrouter_api_key_here\""
             fi
             return 0
         fi
@@ -2400,7 +2383,7 @@ EOF
    {
      "mcpServers": {
        "mesh": {
-         "command": "$script_dir/mesh-mcp-server"
+         "command": "$script_dir/mesh"
        }
      }
    }
@@ -2444,13 +2427,13 @@ EOF
     echo "   Add this configuration to ~/.codex/config.toml:"
     echo ""
     cat << EOF
-   [mcp_servers.pal]
+   [mcp_servers.mesh]
    command = "bash"
-   args = ["-c", "for p in \$(which uvx 2>/dev/null) \$HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \\\"\$p\\\" ] && exec \\\"\$p\\\" --from git+https://github.com/dgdev25/mesh.git mesh-mcp-server; done; echo 'uvx not found' >&2; exit 1"]
+   args = ["-c", "for p in \$(which uvx 2>/dev/null) \$HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \\\"\$p\\\" ] && exec \\\"\$p\\\" --from git+https://github.com/dgdev25/mesh.git mesh; done; echo 'uvx not found' >&2; exit 1"]
 
-   [mcp_servers.pal.env]
+   [mcp_servers.mesh.env]
    PATH = "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:\$HOME/.local/bin:\$HOME/.cargo/bin:\$HOME/bin"
-   GEMINI_API_KEY = "your_gemini_api_key_here"
+   OPENROUTER_API_KEY = "your_openrouter_api_key_here"
 EOF
     echo ""
 }
