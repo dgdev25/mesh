@@ -36,16 +36,12 @@ class ModelProviderRegistry:
 
     _instance = None
 
-    # Provider priority order for model selection
-    # Native APIs first, then custom endpoints, then catch-all providers
+    # Provider priority order for model selection.
+    # CLI providers run first (no API key required); OpenRouter is the only HTTP fallback.
     PROVIDER_PRIORITY_ORDER = [
-        ProviderType.GOOGLE,  # Direct Gemini access
-        ProviderType.OPENAI,  # Direct OpenAI access
-        ProviderType.AZURE,  # Azure-hosted OpenAI deployments
-        ProviderType.XAI,  # Direct X.AI GROK access
-        ProviderType.DIAL,  # DIAL unified API access
-        ProviderType.CUSTOM,  # Local/self-hosted models
-        ProviderType.OPENROUTER,  # Catch-all for cloud models
+        ProviderType.GEMINI_CLI,
+        ProviderType.CODEX_CLI,
+        ProviderType.OPENROUTER,
     ]
 
     def __new__(cls):
@@ -99,53 +95,13 @@ class ModelProviderRegistry:
         # Get provider class or factory function
         provider_class = instance._providers[provider_type]
 
-        # For custom providers, handle special initialization requirements
-        if provider_type == ProviderType.CUSTOM:
-            # Check if it's a factory function (callable but not a class)
-            if callable(provider_class) and not isinstance(provider_class, type):
-                # Factory function - call it with api_key parameter
-                provider = provider_class(api_key=api_key)
-            else:
-                # Regular class - need to handle URL requirement
-                custom_url = get_env("CUSTOM_API_URL", "") or ""
-                if not custom_url:
-                    if api_key:  # Key is set but URL is missing
-                        logging.warning("CUSTOM_API_KEY set but CUSTOM_API_URL missing – skipping Custom provider")
-                    return None
-                # Use empty string as API key for custom providers that don't need auth (e.g., Ollama)
-                # This allows the provider to be created even without CUSTOM_API_KEY being set
-                api_key = api_key or ""
-                # Initialize custom provider with both API key and base URL
-                provider = provider_class(api_key=api_key, base_url=custom_url)
-        elif provider_type == ProviderType.GOOGLE:
-            # For Gemini, check if custom base URL is configured
-            if not api_key:
-                return None
-            gemini_base_url = get_env("GEMINI_BASE_URL")
-            provider_kwargs = {"api_key": api_key}
-            if gemini_base_url:
-                provider_kwargs["base_url"] = gemini_base_url
-                logging.info(f"Initialized Gemini provider with custom endpoint: {gemini_base_url}")
-            provider = provider_class(**provider_kwargs)
-        elif provider_type == ProviderType.AZURE:
-            if not api_key:
-                return None
-
-            azure_endpoint = get_env("AZURE_OPENAI_ENDPOINT")
-            if not azure_endpoint:
-                logging.warning("AZURE_OPENAI_ENDPOINT missing – skipping Azure OpenAI provider")
-                return None
-
-            azure_version = get_env("AZURE_OPENAI_API_VERSION")
-            provider = provider_class(
-                api_key=api_key,
-                azure_endpoint=azure_endpoint,
-                api_version=azure_version,
-            )
+        if provider_type in (ProviderType.GEMINI_CLI, ProviderType.CODEX_CLI):
+            # CLI providers are registered as factories — no API key required
+            provider = provider_class(api_key=None) if callable(provider_class) and not isinstance(provider_class, type) else provider_class()
         else:
+            # OpenRouter (and any future HTTP provider) — API key required
             if not api_key:
                 return None
-            # Initialize non-custom provider with just API key
             provider = provider_class(api_key=api_key)
 
         # Cache the instance
@@ -335,13 +291,8 @@ class ModelProviderRegistry:
             API key string or None if not found
         """
         key_mapping = {
-            ProviderType.GOOGLE: "GEMINI_API_KEY",
-            ProviderType.OPENAI: "OPENAI_API_KEY",
-            ProviderType.AZURE: "AZURE_OPENAI_API_KEY",
-            ProviderType.XAI: "XAI_API_KEY",
             ProviderType.OPENROUTER: "OPENROUTER_API_KEY",
-            ProviderType.CUSTOM: "CUSTOM_API_KEY",  # Can be empty for providers that don't need auth
-            ProviderType.DIAL: "DIAL_API_KEY",
+            # CLI providers don't use API keys; they shell out to the binary.
         }
 
         env_var = key_mapping.get(provider_type)
@@ -433,7 +384,7 @@ class ModelProviderRegistry:
 
         # Ultimate fallback if no providers have models
         logging.warning("No models available from any provider, using default fallback")
-        return "gemini-2.5-flash"
+        return "google/gemini-2.5-pro"
 
     @classmethod
     def get_available_providers_with_keys(cls) -> list[ProviderType]:
@@ -507,9 +458,9 @@ class ModelProviderRegistry:
         # Try to detect CLI availability (without full provider init)
         try:
             if which("gemini"):
-                cli_providers.append(("gemini_cli", ProviderType.GOOGLE))
+                cli_providers.append(("gemini_cli", ProviderType.GEMINI_CLI))
             if which("codex"):
-                cli_providers.append(("codex_cli", ProviderType.OPENAI))
+                cli_providers.append(("codex_cli", ProviderType.CODEX_CLI))
         except Exception as e:
             logging.warning(f"Error detecting CLI tools: {e}")
 

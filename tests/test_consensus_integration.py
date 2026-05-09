@@ -107,8 +107,8 @@ async def test_consensus_multi_model_consultations(monkeypatch, openai_model):
         OpenAIModelProvider.reload_registry()
         assert openai_model in OpenAIModelProvider.MODEL_CAPABILITIES
 
-        ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
-        ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
 
         # Inject HTTP transport for OpenAI interactions
         inject_transport(monkeypatch, str(consensus_cassette_path))
@@ -233,7 +233,7 @@ async def test_consensus_auto_mode_with_openrouter_and_gemini(monkeypatch):
         from providers.gemini import GeminiModelProvider
         from providers.openrouter import OpenRouterProvider
 
-        ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
         ModelProviderRegistry.register_provider(ProviderType.OPENROUTER, OpenRouterProvider)
 
         from utils.storage_backend import get_storage_backend

@@ -1,9 +1,8 @@
 """
 List Models Tool - Display all available models organized by provider
 
-This tool provides a comprehensive view of all AI models available in the system,
-organized by their provider (Gemini, OpenAI, X.AI, OpenRouter, Custom).
-It shows which providers are configured and what models can be used.
+Shows the Gemini CLI, Codex CLI, and OpenRouter providers — Mesh's three
+supported backends after the CLI-first refactor.
 """
 
 import logging
@@ -11,7 +10,6 @@ from typing import Any, Optional
 
 from mcp.types import TextContent
 
-from providers.registries.custom import CustomEndpointModelRegistry
 from providers.registries.openrouter import OpenRouterModelRegistry
 from tools.models import ToolModelCategory, ToolOutput
 from tools.shared.base_models import ToolRequest
@@ -96,13 +94,10 @@ class ListModelsTool(BaseTool):
             for model_name, provider_type in restricted_map.items():
                 restricted_models_by_provider.setdefault(provider_type, []).append(model_name)
 
-        # Map provider types to friendly names and their models
+        # Map provider types to friendly names. CLI providers don't use API keys.
         provider_info = {
-            ProviderType.GOOGLE: {"name": "Google Gemini", "env_key": "GEMINI_API_KEY"},
-            ProviderType.OPENAI: {"name": "OpenAI", "env_key": "OPENAI_API_KEY"},
-            ProviderType.AZURE: {"name": "Azure OpenAI", "env_key": "AZURE_OPENAI_API_KEY"},
-            ProviderType.XAI: {"name": "X.AI (Grok)", "env_key": "XAI_API_KEY"},
-            ProviderType.DIAL: {"name": "AI DIAL", "env_key": "DIAL_API_KEY"},
+            ProviderType.GEMINI_CLI: {"name": "Gemini CLI", "env_key": None},
+            ProviderType.CODEX_CLI: {"name": "Codex CLI", "env_key": None},
         }
 
         def format_model_entry(provider, display_name: str) -> list[str]:
@@ -312,41 +307,6 @@ class ListModelsTool(BaseTool):
 
         output_lines.append("")
 
-        # Check Custom API
-        custom_url = get_env("CUSTOM_API_URL")
-
-        output_lines.append(f"## Custom/Local API {'✅' if custom_url else '❌'}")
-
-        if custom_url:
-            output_lines.append("**Status**: Configured and available")
-            output_lines.append(f"**Endpoint**: {custom_url}")
-            output_lines.append("**Description**: Local models via Ollama, vLLM, LM Studio, etc.")
-
-            try:
-                registry = CustomEndpointModelRegistry()
-                custom_models = []
-
-                for alias in registry.list_aliases():
-                    config = registry.resolve(alias)
-                    if config:
-                        custom_models.append((alias, config))
-
-                if custom_models:
-                    output_lines.append("\n**Custom Models**:")
-                    for alias, config in custom_models:
-                        context_str = f"{config.context_window // 1000}K" if config.context_window else "?"
-                        output_lines.append(f"- `{alias}` → `{config.model_name}` ({context_str} context)")
-                        if config.description:
-                            output_lines.append(f"  - {config.description}")
-
-            except Exception as e:
-                output_lines.append(f"**Error loading custom models**: {str(e)}")
-        else:
-            output_lines.append("**Status**: Not configured (set CUSTOM_API_URL)")
-            output_lines.append("**Example**: CUSTOM_API_URL=http://localhost:11434 (for Ollama)")
-
-        output_lines.append("")
-
         # Add summary
         output_lines.append("## Summary")
 
@@ -359,8 +319,6 @@ class ListModelsTool(BaseTool):
             ]
         )
         if is_openrouter_configured:
-            configured_count += 1
-        if custom_url:
             configured_count += 1
 
         output_lines.append(f"**Configured Providers**: {configured_count}")

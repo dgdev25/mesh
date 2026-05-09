@@ -44,29 +44,17 @@ importlib.reload(config)
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-# Register providers for all tests
-from providers.gemini import GeminiModelProvider  # noqa: E402
-from providers.openai import OpenAIModelProvider  # noqa: E402
+# Register CLI providers for all tests (no API keys, just subprocess shells)
+from providers.codex_cli import CodexCliProvider  # noqa: E402
+from providers.gemini_cli import GeminiCliProvider  # noqa: E402
+from providers.openrouter import OpenRouterProvider  # noqa: E402
 from providers.registry import ModelProviderRegistry  # noqa: E402
 from providers.shared import ProviderType  # noqa: E402
-from providers.xai import XAIModelProvider  # noqa: E402
 
 # Register providers at test startup
-ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
-ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
-ModelProviderRegistry.register_provider(ProviderType.XAI, XAIModelProvider)
-
-# Register CUSTOM provider if CUSTOM_API_URL is available (for integration tests)
-# But only if we're actually running integration tests, not unit tests
-if os.getenv("CUSTOM_API_URL") and "test_prompt_regression.py" in os.getenv("PYTEST_CURRENT_TEST", ""):
-    from providers.custom import CustomProvider  # noqa: E402
-
-    def custom_provider_factory(api_key=None):
-        """Factory function that creates CustomProvider with proper parameters."""
-        base_url = os.getenv("CUSTOM_API_URL", "")
-        return CustomProvider(api_key=api_key or "", base_url=base_url)
-
-    ModelProviderRegistry.register_provider(ProviderType.CUSTOM, custom_provider_factory)
+ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiCliProvider)
+ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, CodexCliProvider)
+ModelProviderRegistry.register_provider(ProviderType.OPENROUTER, OpenRouterProvider)
 
 
 @pytest.fixture
@@ -84,7 +72,7 @@ def project_path(tmp_path):
 
 def _set_dummy_keys_if_missing():
     """Set dummy API keys only when they are completely absent."""
-    for var in ("GEMINI_API_KEY", "OPENAI_API_KEY", "XAI_API_KEY"):
+    for var in ("OPENROUTER_API_KEY",):
         if not os.environ.get(var):
             os.environ[var] = "dummy-key-for-tests"
 
@@ -125,26 +113,12 @@ def mock_provider_availability(request, monkeypatch):
 
     registry = ModelProviderRegistry()
 
-    if ProviderType.GOOGLE not in registry._providers:
-        ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
-    if ProviderType.OPENAI not in registry._providers:
-        ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
-    if ProviderType.XAI not in registry._providers:
-        ModelProviderRegistry.register_provider(ProviderType.XAI, XAIModelProvider)
-
-    # Ensure CUSTOM provider is registered if needed for integration tests
-    if (
-        os.getenv("CUSTOM_API_URL")
-        and "test_prompt_regression.py" in os.getenv("PYTEST_CURRENT_TEST", "")
-        and ProviderType.CUSTOM not in registry._providers
-    ):
-        from providers.custom import CustomProvider
-
-        def custom_provider_factory(api_key=None):
-            base_url = os.getenv("CUSTOM_API_URL", "")
-            return CustomProvider(api_key=api_key or "", base_url=base_url)
-
-        ModelProviderRegistry.register_provider(ProviderType.CUSTOM, custom_provider_factory)
+    if ProviderType.GEMINI_CLI not in registry._providers:
+        ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiCliProvider)
+    if ProviderType.CODEX_CLI not in registry._providers:
+        ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, CodexCliProvider)
+    if ProviderType.OPENROUTER not in registry._providers:
+        ModelProviderRegistry.register_provider(ProviderType.OPENROUTER, OpenRouterProvider)
 
     # Also mock is_effective_auto_mode for all BaseTool instances to return False
     # unless we're specifically testing auto mode behavior
@@ -180,11 +154,7 @@ def clear_model_restriction_env(monkeypatch):
     """Ensure per-test isolation from user-defined model restriction env vars."""
 
     restriction_vars = [
-        "OPENAI_ALLOWED_MODELS",
-        "GOOGLE_ALLOWED_MODELS",
-        "XAI_ALLOWED_MODELS",
         "OPENROUTER_ALLOWED_MODELS",
-        "DIAL_ALLOWED_MODELS",
     ]
 
     for var in restriction_vars:

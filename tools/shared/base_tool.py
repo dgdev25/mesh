@@ -1565,16 +1565,7 @@ When recommending searches, be specific about what information you need and why 
                 # Assume a reasonable size for problematic files
                 total_size_mb += 1.0  # 1MB assumption
 
-        # Apply 40MB cap for custom models if needed
         effective_limit_mb = max_size_mb
-        try:
-            from providers.shared import ProviderType
-
-            # ModelCapabilities dataclass has provider field defined
-            if capabilities.provider == ProviderType.CUSTOM:
-                effective_limit_mb = min(max_size_mb, 40.0)
-        except Exception:
-            pass
 
         # Validate against size limit
         if total_size_mb > effective_limit_mb:

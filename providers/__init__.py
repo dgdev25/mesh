@@ -1,9 +1,8 @@
-"""Model provider abstractions for supporting multiple AI providers."""
+"""Model provider abstractions for Mesh's CLI-first architecture."""
 
-from .azure_openai import AzureOpenAIProvider
 from .base import ModelProvider
-from .gemini import GeminiModelProvider
-from .openai import OpenAIModelProvider
+from .codex_cli import CodexCliProvider
+from .gemini_cli import GeminiCliProvider
 from .openai_compatible import OpenAICompatibleProvider
 from .openrouter import OpenRouterProvider
 from .registry import ModelProviderRegistry
@@ -14,9 +13,8 @@ __all__ = [
     "ModelResponse",
     "ModelCapabilities",
     "ModelProviderRegistry",
-    "AzureOpenAIProvider",
-    "GeminiModelProvider",
-    "OpenAIModelProvider",
+    "CodexCliProvider",
+    "GeminiCliProvider",
     "OpenAICompatibleProvider",
     "OpenRouterProvider",
 ]

@@ -192,8 +192,8 @@ class TestProviderRoutingBugs:
             from providers.openai import OpenAIModelProvider
             from providers.openrouter import OpenRouterProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
             ModelProviderRegistry.register_provider(ProviderType.OPENROUTER, OpenRouterProvider)
 
             tool = ChatTool()
@@ -202,13 +202,13 @@ class TestProviderRoutingBugs:
             # Google models should use Google provider
             flash_provider = tool.get_model_provider("flash")
             assert (
-                flash_provider.get_provider_type() == ProviderType.GOOGLE
+                flash_provider.get_provider_type() == ProviderType.GEMINI_CLI
             ), "When both Google and OpenRouter API keys are available, 'flash' should prefer Google provider"
 
             # OpenAI models should use OpenAI provider
             o3_provider = tool.get_model_provider("o3")
             assert (
-                o3_provider.get_provider_type() == ProviderType.OPENAI
+                o3_provider.get_provider_type() == ProviderType.CODEX_CLI
             ), "When both OpenAI and OpenRouter API keys are available, 'o3' should prefer OpenAI provider"
 
         finally:

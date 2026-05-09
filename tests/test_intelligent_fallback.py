@@ -41,7 +41,7 @@ class TestIntelligentFallback:
         # Register only OpenAI provider for this test
         from providers.openai import OpenAIModelProvider
 
-        ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
 
         fallback_model = ModelProviderRegistry.get_preferred_fallback_model()
         assert fallback_model == "gpt-5.2"  # Based on new preference order: gpt-5.2 before o4-mini
@@ -52,7 +52,7 @@ class TestIntelligentFallback:
         # Register only Gemini provider for this test
         from providers.gemini import GeminiModelProvider
 
-        ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
 
         fallback_model = ModelProviderRegistry.get_preferred_fallback_model()
         assert fallback_model == "gemini-2.5-flash"
@@ -64,8 +64,8 @@ class TestIntelligentFallback:
         from providers.gemini import GeminiModelProvider
         from providers.openai import OpenAIModelProvider
 
-        ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
-        ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
 
         fallback_model = ModelProviderRegistry.get_preferred_fallback_model()
         assert fallback_model == "gemini-2.5-flash"  # Gemini has priority now (based on new PROVIDER_PRIORITY_ORDER)
@@ -77,8 +77,8 @@ class TestIntelligentFallback:
         from providers.gemini import GeminiModelProvider
         from providers.openai import OpenAIModelProvider
 
-        ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
-        ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
 
         fallback_model = ModelProviderRegistry.get_preferred_fallback_model()
         assert fallback_model == "gemini-2.5-flash"  # Default fallback
@@ -91,22 +91,22 @@ class TestIntelligentFallback:
         with patch.dict(os.environ, {"OPENAI_API_KEY": "sk-test-key", "GEMINI_API_KEY": ""}, clear=False):
             # Clear and register providers
             ModelProviderRegistry._instance = None
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
 
             available = ModelProviderRegistry.get_available_providers_with_keys()
-            assert ProviderType.OPENAI in available
-            assert ProviderType.GOOGLE not in available
+            assert ProviderType.CODEX_CLI in available
+            assert ProviderType.GEMINI_CLI not in available
 
         with patch.dict(os.environ, {"OPENAI_API_KEY": "", "GEMINI_API_KEY": "test-key"}, clear=False):
             # Clear and register providers
             ModelProviderRegistry._instance = None
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
 
             available = ModelProviderRegistry.get_available_providers_with_keys()
-            assert ProviderType.GOOGLE in available
-            assert ProviderType.OPENAI not in available
+            assert ProviderType.GEMINI_CLI in available
+            assert ProviderType.CODEX_CLI not in available
 
     def test_auto_mode_conversation_memory_integration(self):
         """Test that conversation memory uses intelligent fallback in auto mode"""
@@ -121,7 +121,7 @@ class TestIntelligentFallback:
             # Register only OpenAI provider for this test
             from providers.openai import OpenAIModelProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
 
             # Create a context with at least one turn so it doesn't exit early
             from utils.conversation_memory import ConversationTurn
@@ -162,7 +162,7 @@ class TestIntelligentFallback:
             # Register only Gemini provider for this test
             from providers.gemini import GeminiModelProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
 
             from utils.conversation_memory import ConversationTurn
 

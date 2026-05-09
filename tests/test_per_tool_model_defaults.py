@@ -95,7 +95,7 @@ class TestModelSelection:
         with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}, clear=False):
             from providers.openai import OpenAIModelProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.EXTENDED_REASONING)
             # OpenAI prefers GPT-5.1-Codex for extended reasoning (coding tasks)
@@ -112,7 +112,7 @@ class TestModelSelection:
         with patch.dict(os.environ, {"GOOGLE_API_KEY": "test-key"}, clear=False):
             from providers.gemini import GeminiModelProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.EXTENDED_REASONING)
             # Gemini should return one of its models for extended reasoning
@@ -130,7 +130,7 @@ class TestModelSelection:
         with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}, clear=False):
             from providers.openai import OpenAIModelProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.FAST_RESPONSE)
             # OpenAI now prefers gpt-5.2 for fast response (based on our new preference order)
@@ -147,7 +147,7 @@ class TestModelSelection:
         with patch.dict(os.environ, {"GOOGLE_API_KEY": "test-key"}, clear=False):
             from providers.gemini import GeminiModelProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.FAST_RESPONSE)
             # Gemini should return one of its models for fast response
@@ -164,7 +164,7 @@ class TestModelSelection:
         with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}, clear=False):
             from providers.openai import OpenAIModelProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.BALANCED)
             # OpenAI prefers gpt-5.2 for balanced (based on our new preference order)
@@ -176,7 +176,7 @@ class TestModelSelection:
         with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}, clear=False):
             from providers.gemini import GeminiModelProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model()
             # Should pick flash for balanced use
@@ -193,21 +193,21 @@ class TestFlexibleModelSelection:
             # Case 1: OpenAI provider for extended reasoning
             {
                 "env": {"OPENAI_API_KEY": "test-key"},
-                "provider_type": ProviderType.OPENAI,
+                "provider_type": ProviderType.CODEX_CLI,
                 "category": ToolModelCategory.EXTENDED_REASONING,
                 "expected": "gpt-5.1-codex",  # GPT-5.1-Codex prioritized for coding tasks
             },
             # Case 2: Gemini provider for fast response
             {
                 "env": {"GEMINI_API_KEY": "test-key"},
-                "provider_type": ProviderType.GOOGLE,
+                "provider_type": ProviderType.GEMINI_CLI,
                 "category": ToolModelCategory.FAST_RESPONSE,
                 "expected": "gemini-2.5-flash",
             },
             # Case 3: OpenAI provider for fast response
             {
                 "env": {"OPENAI_API_KEY": "test-key"},
-                "provider_type": ProviderType.OPENAI,
+                "provider_type": ProviderType.CODEX_CLI,
                 "category": ToolModelCategory.FAST_RESPONSE,
                 "expected": "gpt-5.2",  # Based on new preference order
             },
@@ -222,14 +222,14 @@ class TestFlexibleModelSelection:
 
             with patch.dict(os.environ, case["env"], clear=False):
                 # Register the appropriate provider
-                if case["provider_type"] == ProviderType.OPENAI:
+                if case["provider_type"] == ProviderType.CODEX_CLI:
                     from providers.openai import OpenAIModelProvider
 
-                    ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
-                elif case["provider_type"] == ProviderType.GOOGLE:
+                    ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
+                elif case["provider_type"] == ProviderType.GEMINI_CLI:
                     from providers.gemini import GeminiModelProvider
 
-                    ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+                    ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
 
                 model = ModelProviderRegistry.get_preferred_fallback_model(case["category"])
                 assert model == case["expected"], f"Failed for case: {case}, got {model}"
@@ -283,9 +283,9 @@ class TestAutoModeErrorMessages:
                 with patch.object(ModelProviderRegistry, "get_available_models") as mock_get_available:
                     # Mock OpenAI models available
                     mock_get_available.return_value = {
-                        "o3": ProviderType.OPENAI,
-                        "o3-mini": ProviderType.OPENAI,
-                        "o4-mini": ProviderType.OPENAI,
+                        "o3": ProviderType.CODEX_CLI,
+                        "o3-mini": ProviderType.CODEX_CLI,
+                        "o4-mini": ProviderType.CODEX_CLI,
                     }
 
                     # Mock the provider lookup to return None for auto model

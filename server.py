@@ -377,262 +377,88 @@ PROMPT_TEMPLATES = {
 
 
 def configure_providers():
-    """
-    Configure and validate AI providers based on available API keys and CLI tools.
+    """Configure providers for Mesh's CLI-first architecture.
 
-    This function checks for API keys and CLI tools, then registers the appropriate providers.
-    At least one valid provider (API key, CLI tool, custom endpoint, or OpenRouter) is required.
+    Detects the ``gemini`` and ``codex`` CLI binaries on PATH (override via
+    ``GEMINI_CLI_PATH`` / ``CODEX_CLI_PATH``) and registers OpenRouter when
+    ``OPENROUTER_API_KEY`` is set. At least one of the three must be available.
 
     Raises:
-        ValueError: If no valid providers are found or conflicting configurations detected
+        ValueError: When no providers can be configured.
     """
-    # Log environment variable status for debugging
-    logger.debug("Checking environment variables for API keys...")
-    api_keys_to_check = ["OPENAI_API_KEY", "OPENROUTER_API_KEY", "GEMINI_API_KEY", "XAI_API_KEY", "CUSTOM_API_URL"]
-    for key in api_keys_to_check:
-        value = get_env(key)
-        logger.debug(f"  {key}: {'[PRESENT]' if value else '[MISSING]'}")
+    from shutil import which
+
     from providers import ModelProviderRegistry
-    from providers.azure_openai import AzureOpenAIProvider
     from providers.codex_cli import CodexCliProvider
-    from providers.custom import CustomProvider
-    from providers.dial import DIALModelProvider
-    from providers.gemini import GeminiModelProvider
     from providers.gemini_cli import GeminiCliProvider
-    from providers.openai import OpenAIModelProvider
     from providers.openrouter import OpenRouterProvider
     from providers.shared import ProviderType
-    from providers.xai import XAIModelProvider
     from utils.model_restrictions import get_restriction_service
 
-    valid_providers = []
-    has_native_apis = False
-    has_cli_tools = False
-    has_openrouter = False
-    has_custom = False
+    valid_providers: list[str] = []
+    registered_providers: list[str] = []
 
-    # Check for Gemini API key
-    gemini_key = get_env("GEMINI_API_KEY")
-    if gemini_key and gemini_key != "your_gemini_api_key_here":
-        valid_providers.append("Gemini")
-        has_native_apis = True
-        logger.info("Gemini API key found - Gemini models available")
+    cli_timeout_raw = get_env("CLI_TIMEOUT_SECONDS", "30")
+    cli_timeout = int(cli_timeout_raw) if cli_timeout_raw and cli_timeout_raw.isdigit() else 30
 
-    # Check for OpenAI API key
-    openai_key = get_env("OPENAI_API_KEY")
-    logger.debug(f"OpenAI key check: key={'[PRESENT]' if openai_key else '[MISSING]'}")
-    if openai_key and openai_key != "your_openai_api_key_here":
-        valid_providers.append("OpenAI")
-        has_native_apis = True
-        logger.info("OpenAI API key found")
-    else:
-        if not openai_key:
-            logger.debug("OpenAI API key not found in environment")
-        else:
-            logger.debug("OpenAI API key is placeholder value")
-
-    # Check for Azure OpenAI configuration
-    azure_key = get_env("AZURE_OPENAI_API_KEY")
-    azure_endpoint = get_env("AZURE_OPENAI_ENDPOINT")
-    azure_models_available = False
-    if azure_key and azure_key != "your_azure_openai_key_here" and azure_endpoint:
-        try:
-            from providers.registries.azure import AzureModelRegistry
-
-            azure_registry = AzureModelRegistry()
-            if azure_registry.list_models():
-                valid_providers.append("Azure OpenAI")
-                has_native_apis = True
-                azure_models_available = True
-                logger.info("Azure OpenAI configuration detected")
-            else:
-                logger.warning(
-                    "Azure OpenAI models configuration is empty. Populate conf/azure_models.json or set AZURE_MODELS_CONFIG_PATH."
-                )
-        except Exception as exc:
-            logger.warning(f"Failed to load Azure OpenAI models: {exc}")
-
-    # Check for X.AI API key
-    xai_key = get_env("XAI_API_KEY")
-    if xai_key and xai_key != "your_xai_api_key_here":
-        valid_providers.append("X.AI (GROK)")
-        has_native_apis = True
-        logger.info("X.AI API key found - GROK models available")
-
-    # Check for DIAL API key
-    dial_key = get_env("DIAL_API_KEY")
-    if dial_key and dial_key != "your_dial_api_key_here":
-        valid_providers.append("DIAL")
-        has_native_apis = True
-        logger.info("DIAL API key found - DIAL models available")
-
-    # Check for OpenRouter API key
-    openrouter_key = get_env("OPENROUTER_API_KEY")
-    logger.debug(f"OpenRouter key check: key={'[PRESENT]' if openrouter_key else '[MISSING]'}")
-    if openrouter_key and openrouter_key != "your_openrouter_api_key_here":
-        valid_providers.append("OpenRouter")
-        has_openrouter = True
-        logger.info("OpenRouter API key found - Multiple models available via OpenRouter")
-    else:
-        if not openrouter_key:
-            logger.debug("OpenRouter API key not found in environment")
-        else:
-            logger.debug("OpenRouter API key is placeholder value")
-
-    # Check for custom API endpoint (Ollama, vLLM, etc.)
-    custom_url = get_env("CUSTOM_API_URL")
-    if custom_url:
-        # IMPORTANT: Always read CUSTOM_API_KEY even if empty
-        # - Some providers (vLLM, LM Studio, enterprise APIs) require authentication
-        # - Others (Ollama) work without authentication (empty key)
-        # - DO NOT remove this variable - it's needed for provider factory function
-        custom_key = get_env("CUSTOM_API_KEY", "") or ""  # Default to empty (Ollama doesn't need auth)
-        custom_model = get_env("CUSTOM_MODEL_NAME", "llama3.2") or "llama3.2"
-        valid_providers.append(f"Custom API ({custom_url})")
-        has_custom = True
-        logger.info(f"Custom API endpoint found: {custom_url} with model {custom_model}")
-        if custom_key:
-            logger.debug("Custom API key provided for authentication")
-        else:
-            logger.debug("No custom API key provided (using unauthenticated access)")
-
-    # Check for CLI tools (Gemini CLI, Codex CLI)
-    gemini_cli_path = get_env("GEMINI_CLI_PATH")
-    codex_cli_path = get_env("CODEX_CLI_PATH")
+    # Detect CLIs (env override > PATH lookup)
+    gemini_cli_path = get_env("GEMINI_CLI_PATH") or which("gemini")
+    codex_cli_path = get_env("CODEX_CLI_PATH") or which("codex")
 
     if gemini_cli_path:
-        valid_providers.append("Gemini CLI")
-        has_cli_tools = True
-        logger.info(f"Gemini CLI found at: {gemini_cli_path}")
+        def gemini_cli_factory(api_key=None):
+            return GeminiCliProvider(cli_path=gemini_cli_path, timeout_s=cli_timeout)
+
+        ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, gemini_cli_factory)
+        valid_providers.append(f"Gemini CLI ({gemini_cli_path})")
+        registered_providers.append(ProviderType.GEMINI_CLI.value)
+        logger.info(f"Gemini CLI registered: {gemini_cli_path}")
 
     if codex_cli_path:
-        valid_providers.append("Codex CLI")
-        has_cli_tools = True
-        logger.info(f"Codex CLI found at: {codex_cli_path}")
+        def codex_cli_factory(api_key=None):
+            return CodexCliProvider(cli_path=codex_cli_path, timeout_s=cli_timeout)
 
-    # Register providers in priority order:
-    # 1. Native APIs first (most direct and efficient)
-    registered_providers = []
+        ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, codex_cli_factory)
+        valid_providers.append(f"Codex CLI ({codex_cli_path})")
+        registered_providers.append(ProviderType.CODEX_CLI.value)
+        logger.info(f"Codex CLI registered: {codex_cli_path}")
 
-    if has_native_apis:
-        if gemini_key and gemini_key != "your_gemini_api_key_here":
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
-            registered_providers.append(ProviderType.GOOGLE.value)
-            logger.debug(f"Registered provider: {ProviderType.GOOGLE.value}")
-        if openai_key and openai_key != "your_openai_api_key_here":
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
-            registered_providers.append(ProviderType.OPENAI.value)
-            logger.debug(f"Registered provider: {ProviderType.OPENAI.value}")
-        if azure_models_available:
-            ModelProviderRegistry.register_provider(ProviderType.AZURE, AzureOpenAIProvider)
-            registered_providers.append(ProviderType.AZURE.value)
-            logger.debug(f"Registered provider: {ProviderType.AZURE.value}")
-        if xai_key and xai_key != "your_xai_api_key_here":
-            ModelProviderRegistry.register_provider(ProviderType.XAI, XAIModelProvider)
-            registered_providers.append(ProviderType.XAI.value)
-            logger.debug(f"Registered provider: {ProviderType.XAI.value}")
-        if dial_key and dial_key != "your_dial_api_key_here":
-            ModelProviderRegistry.register_provider(ProviderType.DIAL, DIALModelProvider)
-            registered_providers.append(ProviderType.DIAL.value)
-            logger.debug(f"Registered provider: {ProviderType.DIAL.value}")
-
-    # 2. CLI tools second (direct binary execution, no API keys needed)
-    if has_cli_tools:
-        if gemini_cli_path:
-            def gemini_cli_factory(api_key=None):
-                cli_timeout = get_env("CLI_TIMEOUT_SECONDS", "30")
-                timeout_s = int(cli_timeout) if cli_timeout.isdigit() else 30
-                return GeminiCliProvider(cli_path=gemini_cli_path, timeout_s=timeout_s)
-
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, gemini_cli_factory)
-            registered_providers.append("gemini_cli")
-            logger.debug(f"Registered provider: gemini_cli")
-
-        if codex_cli_path:
-            def codex_cli_factory(api_key=None):
-                cli_timeout = get_env("CLI_TIMEOUT_SECONDS", "30")
-                timeout_s = int(cli_timeout) if cli_timeout.isdigit() else 30
-                return CodexCliProvider(cli_path=codex_cli_path, timeout_s=timeout_s)
-
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, codex_cli_factory)
-            registered_providers.append("codex_cli")
-            logger.debug(f"Registered provider: codex_cli")
-
-    # 3. Custom provider third (for local/private models)
-    if has_custom:
-        # Factory function that creates CustomProvider with proper parameters
-        def custom_provider_factory(api_key=None):
-            # api_key is CUSTOM_API_KEY (can be empty for Ollama), base_url from CUSTOM_API_URL
-            base_url = get_env("CUSTOM_API_URL", "") or ""
-            return CustomProvider(api_key=api_key or "", base_url=base_url)  # Use provided API key or empty string
-
-        ModelProviderRegistry.register_provider(ProviderType.CUSTOM, custom_provider_factory)
-        registered_providers.append(ProviderType.CUSTOM.value)
-        logger.debug(f"Registered provider: {ProviderType.CUSTOM.value}")
-
-    # 4. OpenRouter last (catch-all for everything else)
-    if has_openrouter:
+    # OpenRouter as the only HTTP fallback
+    openrouter_key = get_env("OPENROUTER_API_KEY")
+    if openrouter_key and openrouter_key != "your_openrouter_api_key_here":
         ModelProviderRegistry.register_provider(ProviderType.OPENROUTER, OpenRouterProvider)
+        valid_providers.append("OpenRouter")
         registered_providers.append(ProviderType.OPENROUTER.value)
-        logger.debug(f"Registered provider: {ProviderType.OPENROUTER.value}")
+        logger.info("OpenRouter API key found — registered as fallback provider")
 
-    # Log all registered providers
-    if registered_providers:
-        logger.info(f"Registered providers: {', '.join(registered_providers)}")
-
-    # Require at least one valid provider
     if not valid_providers:
         raise ValueError(
-            "At least one provider configuration is required. Please set either:\n"
-            "- GEMINI_CLI_PATH and/or CODEX_CLI_PATH for CLI-based models (no API key needed)\n"
-            "- GEMINI_API_KEY for Gemini API models\n"
-            "- OPENAI_API_KEY for OpenAI API models\n"
-            "- XAI_API_KEY for X.AI GROK API models\n"
-            "- DIAL_API_KEY for DIAL API models\n"
-            "- OPENROUTER_API_KEY for OpenRouter (multiple models)\n"
-            "- CUSTOM_API_URL for local models (Ollama, vLLM, etc.)"
+            "No providers configured. Mesh requires at least one of:\n"
+            "  - `gemini` CLI on PATH (or GEMINI_CLI_PATH)\n"
+            "  - `codex` CLI on PATH (or CODEX_CLI_PATH)\n"
+            "  - OPENROUTER_API_KEY for OpenRouter fallback"
         )
 
+    logger.info(f"Registered providers: {', '.join(registered_providers)}")
     logger.info(f"Available providers: {', '.join(valid_providers)}")
 
-    # Log provider priority
-    priority_info = []
-    if has_native_apis:
-        priority_info.append("Native APIs (Gemini, OpenAI)")
-    if has_cli_tools:
-        priority_info.append("CLI tools (Gemini CLI, Codex CLI)")
-    if has_custom:
-        priority_info.append("Custom endpoints")
-    if has_openrouter:
-        priority_info.append("OpenRouter (catch-all)")
-
-    if len(priority_info) > 1:
-        logger.info(f"Provider priority: {' → '.join(priority_info)}")
-
-    # Register cleanup function for providers
     def cleanup_providers():
-        """Clean up all registered providers on shutdown."""
         try:
             registry = ModelProviderRegistry()
             if hasattr(registry, "_initialized_providers"):
-                # Iterate over provider instances (values), not (type, instance) tuples
                 for provider in list(registry._initialized_providers.values()):
                     try:
                         if provider and hasattr(provider, "close"):
                             provider.close()
                     except Exception:
-                        # Logger might be closed during shutdown
                         pass
         except Exception:
-            # Silently ignore any errors during cleanup
             pass
 
     atexit.register(cleanup_providers)
 
-    # Check and log model restrictions
     restriction_service = get_restriction_service()
     restrictions = restriction_service.get_restriction_summary()
-
     if restrictions:
         logger.info("Model restrictions configured:")
         for provider_name, allowed_models in restrictions.items():
@@ -641,10 +467,8 @@ def configure_providers():
             else:
                 logger.info(f"  {provider_name}: {allowed_models}")
 
-        # Validate restrictions against known models
         provider_instances = {}
-        provider_types_to_validate = [ProviderType.GOOGLE, ProviderType.OPENAI, ProviderType.XAI, ProviderType.DIAL]
-        for provider_type in provider_types_to_validate:
+        for provider_type in (ProviderType.GEMINI_CLI, ProviderType.CODEX_CLI, ProviderType.OPENROUTER):
             provider = ModelProviderRegistry.get_provider(provider_type)
             if provider:
                 provider_instances[provider_type] = provider
@@ -654,7 +478,6 @@ def configure_providers():
     else:
         logger.info("No model restrictions configured - all models allowed")
 
-    # Check if auto mode has any models available after restrictions
     from config import IS_AUTO_MODE
 
     if IS_AUTO_MODE:
@@ -662,7 +485,7 @@ def configure_providers():
         if not available_models:
             logger.error(
                 "Auto mode is enabled but no models are available after applying restrictions. "
-                "Please check your OPENAI_ALLOWED_MODELS and GOOGLE_ALLOWED_MODELS settings."
+                "Please check your OPENROUTER_ALLOWED_MODELS setting."
             )
             raise ValueError(
                 "No models available for auto mode due to restrictions. "

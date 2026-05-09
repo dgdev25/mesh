@@ -93,7 +93,7 @@ def _mock_success_response(content: str = "ok") -> MagicMock:
     resp.usage = {"input_tokens": 5, "output_tokens": 10, "total_tokens": 15}
     resp.model_name = "test-model"
     resp.friendly_name = "Test Provider"
-    resp.provider = ProviderType.GOOGLE
+    resp.provider = ProviderType.GEMINI_CLI
     resp.metadata = {}
     return resp
 
@@ -129,11 +129,11 @@ class TestGeminiCliProviderIntegration:
         assert len(response.content) == 15_000
 
     def test_parse_response_provider_type_is_google(self):
-        """should tag response with ProviderType.GOOGLE."""
+        """should tag response with ProviderType.GEMINI_CLI."""
         provider = GeminiCliProvider(cli_path="gemini")
         output = _cli_output(_make_gemini_json())
         response = provider._parse_response(output)
-        assert response.provider == ProviderType.GOOGLE
+        assert response.provider == ProviderType.GEMINI_CLI
 
     def test_parse_response_friendly_name_is_gemini_cli(self):
         """should set friendly_name to 'Gemini (CLI)'."""
@@ -243,11 +243,11 @@ class TestCodexCliProviderIntegration:
         assert len(response.content) == 15_000
 
     def test_parse_response_provider_type_is_openai(self):
-        """should tag response with ProviderType.OPENAI."""
+        """should tag response with ProviderType.CODEX_CLI."""
         provider = CodexCliProvider(cli_path="codex")
         output = _cli_output(_make_codex_json())
         response = provider._parse_response(output)
-        assert response.provider == ProviderType.OPENAI
+        assert response.provider == ProviderType.CODEX_CLI
 
     def test_parse_response_friendly_name_is_openai_cli(self):
         """should set friendly_name to 'OpenAI (CLI)'."""

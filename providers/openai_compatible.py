@@ -122,12 +122,11 @@ class OpenAICompatibleProvider(ModelProvider):
                 self._allowed_alias_cache = {}
                 return models
 
-        # Log info if no allow-list configured for proxy providers
-        if self.get_provider_type() not in [ProviderType.GOOGLE, ProviderType.OPENAI]:
-            logging.info(
-                f"Model allow-list not configured for {self.FRIENDLY_NAME} - all models permitted. "
-                f"To restrict access, set {env_var} with comma-separated model names."
-            )
+        # Log info that no allow-list is configured for this provider
+        logging.info(
+            f"Model allow-list not configured for {self.FRIENDLY_NAME} - all models permitted. "
+            f"To restrict access, set {env_var} with comma-separated model names."
+        )
 
         return None
 

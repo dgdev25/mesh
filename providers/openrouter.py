@@ -139,12 +139,6 @@ class OpenRouterProvider(OpenAICompatibleProvider):
             if not config:
                 continue
 
-            # Custom models belong to CustomProvider; skip them here so the two
-            # providers don't race over the same registrations (important for tests
-            # that stub the registry with minimal objects lacking attrs).
-            if config.provider == ProviderType.CUSTOM:
-                continue
-
             if restriction_service:
                 allowed = restriction_service.is_allowed(self.get_provider_type(), model_name)
 
@@ -207,10 +201,6 @@ class OpenRouterProvider(OpenAICompatibleProvider):
         for model_name in self._registry.list_models():
             config = self._registry.resolve(model_name)
             if not config:
-                continue
-
-            # See note in list_models: respect the CustomProvider boundary.
-            if config.provider == ProviderType.CUSTOM:
                 continue
 
             capabilities[model_name] = config

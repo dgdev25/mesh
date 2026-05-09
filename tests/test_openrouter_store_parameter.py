@@ -42,7 +42,7 @@ class MockOpenAIProvider(OpenAICompatibleProvider):
     FRIENDLY_NAME = "OpenAI Test"
 
     def get_provider_type(self):
-        return ProviderType.OPENAI
+        return ProviderType.CODEX_CLI
 
     def get_capabilities(self, model_name):
         mock_caps = Mock()

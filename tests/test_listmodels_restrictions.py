@@ -76,7 +76,7 @@ class TestListModelsRestrictions(unittest.TestCase):
 
         # Create mock Gemini provider for comparison
         self.mock_gemini = MagicMock(spec=ModelProvider)
-        self.mock_gemini.provider_type = ProviderType.GOOGLE
+        self.mock_gemini.provider_type = ProviderType.GEMINI_CLI
         self.mock_gemini.list_models.return_value = ["gemini-2.5-flash", "gemini-2.5-pro"]
         self.mock_gemini.get_capabilities_by_rank.return_value = []
         self.mock_gemini.get_capabilities_by_rank.return_value = []
@@ -151,7 +151,7 @@ class TestListModelsRestrictions(unittest.TestCase):
         def get_provider_side_effect(provider_type, force_new=False):
             if provider_type == ProviderType.OPENROUTER:
                 return self.mock_openrouter
-            elif provider_type == ProviderType.GOOGLE:
+            elif provider_type == ProviderType.GEMINI_CLI:
                 return self.mock_gemini
             return None
 
@@ -162,8 +162,8 @@ class TestListModelsRestrictions(unittest.TestCase):
 
         # Mock available models
         mock_get_models.return_value = {
-            "gemini-2.5-flash": ProviderType.GOOGLE,
-            "gemini-2.5-pro": ProviderType.GOOGLE,
+            "gemini-2.5-flash": ProviderType.GEMINI_CLI,
+            "gemini-2.5-pro": ProviderType.GEMINI_CLI,
             "anthropic/claude-opus-4-20240229": ProviderType.OPENROUTER,
             "anthropic/claude-sonnet-4-20240229": ProviderType.OPENROUTER,
             "deepseek/deepseek-r1-0528:free": ProviderType.OPENROUTER,
@@ -261,7 +261,7 @@ class TestListModelsRestrictions(unittest.TestCase):
         def get_provider_side_effect(provider_type, force_new=False):
             if provider_type == ProviderType.OPENROUTER:
                 return self.mock_openrouter
-            elif provider_type == ProviderType.GOOGLE:
+            elif provider_type == ProviderType.GEMINI_CLI:
                 return self.mock_gemini
             return None
 

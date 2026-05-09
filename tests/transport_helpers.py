@@ -27,7 +27,7 @@ def inject_transport(monkeypatch, cassette_path: str):
     from providers.shared import ProviderType
 
     # Always register OpenAI provider for transport tests (API key might be dummy)
-    ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
+    ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
 
     # Create transport
     transport = TransportFactory.create_transport(str(cassette_path))

@@ -107,8 +107,8 @@ async def test_chat_cross_model_continuation(monkeypatch, tmp_path):
         from providers.gemini import GeminiModelProvider
         from providers.openai import OpenAIModelProvider
 
-        ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
-        ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
 
         from utils import conversation_memory
 
@@ -175,8 +175,8 @@ async def test_chat_cross_model_continuation(monkeypatch, tmp_path):
         from providers.gemini import GeminiModelProvider
         from providers.openai import OpenAIModelProvider
 
-        ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
-        ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
 
         inject_transport(monkeypatch, OPENAI_CASSETTE_PATH)
 

@@ -1,23 +1,16 @@
 """
 Model Restriction Service
 
-This module provides centralized management of model usage restrictions
-based on environment variables. It allows organizations to limit which
-models can be used from each provider for cost control, compliance, or
-standardization purposes.
+Centralized management of model usage restrictions via environment variables.
 
 Environment Variables:
-- OPENAI_ALLOWED_MODELS: Comma-separated list of allowed OpenAI models
-- GOOGLE_ALLOWED_MODELS: Comma-separated list of allowed Gemini models
-- XAI_ALLOWED_MODELS: Comma-separated list of allowed X.AI GROK models
 - OPENROUTER_ALLOWED_MODELS: Comma-separated list of allowed OpenRouter models
-- DIAL_ALLOWED_MODELS: Comma-separated list of allowed DIAL models
+
+CLI providers (Gemini CLI, Codex CLI) do not support restriction lists — the
+underlying CLI binary controls model availability.
 
 Example:
-    OPENAI_ALLOWED_MODELS=o3-mini,o4-mini
-    GOOGLE_ALLOWED_MODELS=flash
-    XAI_ALLOWED_MODELS=grok-4,grok-4.1-fast-reasoning
-    OPENROUTER_ALLOWED_MODELS=opus,sonnet,mistral
+    OPENROUTER_ALLOWED_MODELS=opus,sonnet,gemini-2.5-pro
 """
 
 import logging
@@ -47,13 +40,10 @@ class ModelRestrictionService:
           commands, etc.).
     """
 
-    # Environment variable names
+    # Environment variable names. Only OpenRouter supports allow-listing;
+    # CLI providers defer to whatever the binary supports at runtime.
     ENV_VARS = {
-        ProviderType.OPENAI: "OPENAI_ALLOWED_MODELS",
-        ProviderType.GOOGLE: "GOOGLE_ALLOWED_MODELS",
-        ProviderType.XAI: "XAI_ALLOWED_MODELS",
         ProviderType.OPENROUTER: "OPENROUTER_ALLOWED_MODELS",
-        ProviderType.DIAL: "DIAL_ALLOWED_MODELS",
     }
 
     def __init__(self):

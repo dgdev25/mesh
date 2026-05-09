@@ -6,12 +6,12 @@ __all__ = ["ProviderType"]
 
 
 class ProviderType(Enum):
-    """Canonical identifiers for every supported provider backend."""
+    """Canonical identifiers for every supported provider backend.
 
-    GOOGLE = "google"
-    OPENAI = "openai"
-    AZURE = "azure"
-    XAI = "xai"
+    Mesh uses a CLI-first architecture: the Gemini and Codex CLIs run as
+    subprocesses, with OpenRouter as the only HTTP fallback.
+    """
+
+    GEMINI_CLI = "gemini_cli"
+    CODEX_CLI = "codex_cli"
     OPENROUTER = "openrouter"
-    CUSTOM = "custom"
-    DIAL = "dial"

@@ -264,10 +264,10 @@ class TestCliProvider:
 
             def _parse_response(self, output):
                 from providers.shared import ModelResponse
-                return ModelResponse(content="test", provider=ProviderType.GOOGLE)
+                return ModelResponse(content="test", provider=ProviderType.GEMINI_CLI)
 
             def get_provider_type(self):
-                return ProviderType.GOOGLE
+                return ProviderType.GEMINI_CLI
 
             async def generate_content(self, prompt, model_name, **kwargs):
                 return None
@@ -286,10 +286,10 @@ class TestCliProvider:
 
             def _parse_response(self, output):
                 from providers.shared import ModelResponse
-                return ModelResponse(content="test", provider=ProviderType.GOOGLE)
+                return ModelResponse(content="test", provider=ProviderType.GEMINI_CLI)
 
             def get_provider_type(self):
-                return ProviderType.GOOGLE
+                return ProviderType.GEMINI_CLI
 
             async def generate_content(self, prompt, model_name, **kwargs):
                 return None
@@ -314,10 +314,10 @@ class TestCliProvider:
 
             def _parse_response(self, output):
                 from providers.shared import ModelResponse
-                return ModelResponse(content="test", provider=ProviderType.GOOGLE)
+                return ModelResponse(content="test", provider=ProviderType.GEMINI_CLI)
 
             def get_provider_type(self):
-                return ProviderType.GOOGLE
+                return ProviderType.GEMINI_CLI
 
             async def generate_content(self, prompt, model_name, **kwargs):
                 return None
@@ -338,10 +338,10 @@ class TestCliProvider:
 
             def _parse_response(self, output):
                 from providers.shared import ModelResponse
-                return ModelResponse(content="test", provider=ProviderType.GOOGLE)
+                return ModelResponse(content="test", provider=ProviderType.GEMINI_CLI)
 
             def get_provider_type(self):
-                return ProviderType.GOOGLE
+                return ProviderType.GEMINI_CLI
 
             async def generate_content(self, prompt, model_name, **kwargs):
                 return None
@@ -362,10 +362,10 @@ class TestCliProvider:
 
             def _parse_response(self, output):
                 from providers.shared import ModelResponse
-                return ModelResponse(content="test", provider=ProviderType.GOOGLE)
+                return ModelResponse(content="test", provider=ProviderType.GEMINI_CLI)
 
             def get_provider_type(self):
-                return ProviderType.GOOGLE
+                return ProviderType.GEMINI_CLI
 
             async def generate_content(self, prompt, model_name, **kwargs):
                 return None
@@ -386,7 +386,7 @@ class TestCliProvider:
                 pass
 
             def get_provider_type(self):
-                return ProviderType.GOOGLE
+                return ProviderType.GEMINI_CLI
 
             async def generate_content(self, prompt, model_name, **kwargs):
                 pass
@@ -406,7 +406,7 @@ class TestCliProvider:
                 pass
 
             def get_provider_type(self):
-                return ProviderType.GOOGLE
+                return ProviderType.GEMINI_CLI
 
             async def generate_content(self, prompt, model_name, **kwargs):
                 pass
@@ -426,7 +426,7 @@ class TestCliProvider:
                 pass
 
             def get_provider_type(self):
-                return ProviderType.GOOGLE
+                return ProviderType.GEMINI_CLI
 
             async def generate_content(self, prompt, model_name, **kwargs):
                 pass
@@ -450,7 +450,7 @@ class TestGeminiCliProvider:
     def test_provider_type(self):
         """Test that provider reports correct type."""
         provider = GeminiCliProvider(cli_path="test_gemini")
-        assert provider.get_provider_type() == ProviderType.GOOGLE
+        assert provider.get_provider_type() == ProviderType.GEMINI_CLI
 
     def test_build_args_basic(self):
         """Test CLI argument building with basic parameters."""
@@ -545,7 +545,7 @@ class TestGeminiCliProvider:
         assert response.usage["input_tokens"] == 10
         assert response.usage["output_tokens"] == 20
         assert response.model_name == "gemini-2-flash"
-        assert response.provider == ProviderType.GOOGLE
+        assert response.provider == ProviderType.GEMINI_CLI
         assert response.friendly_name == "Gemini (CLI)"
 
     def test_parse_response_missing_content(self):
@@ -594,7 +594,7 @@ class TestCodexCliProvider:
     def test_provider_type(self):
         """Test that provider reports correct type."""
         provider = CodexCliProvider(cli_path="test_codex")
-        assert provider.get_provider_type() == ProviderType.OPENAI
+        assert provider.get_provider_type() == ProviderType.CODEX_CLI
 
     def test_build_args_basic(self):
         """Test CLI argument building with basic parameters."""
@@ -716,7 +716,7 @@ class TestCodexCliProvider:
         assert response.usage["input_tokens"] == 10
         assert response.usage["output_tokens"] == 20
         assert response.model_name == "gpt-4"
-        assert response.provider == ProviderType.OPENAI
+        assert response.provider == ProviderType.CODEX_CLI
         assert response.friendly_name == "OpenAI (CLI)"
 
     def test_parse_response_missing_content(self):

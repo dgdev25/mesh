@@ -49,7 +49,7 @@ class TestAutoModeProviderSelection:
             # Register only Gemini provider
             from providers.gemini import GeminiModelProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
 
             # Test fallback selection for different categories
             extended_reasoning = ModelProviderRegistry.get_preferred_fallback_model(
@@ -88,7 +88,7 @@ class TestAutoModeProviderSelection:
             # Register only OpenAI provider
             from providers.openai import OpenAIModelProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
 
             # Test fallback selection for different categories
             extended_reasoning = ModelProviderRegistry.get_preferred_fallback_model(
@@ -129,8 +129,8 @@ class TestAutoModeProviderSelection:
             from providers.gemini import GeminiModelProvider
             from providers.openai import OpenAIModelProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
 
             # Test fallback selection for different categories
             extended_reasoning = ModelProviderRegistry.get_preferred_fallback_model(
@@ -214,15 +214,15 @@ class TestAutoModeProviderSelection:
             from providers.gemini import GeminiModelProvider
             from providers.openai import OpenAIModelProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
 
             # Get available models with restrictions
             available_models = ModelProviderRegistry.get_available_models(respect_restrictions=True)
 
             # Should include allowed OpenAI model
             assert "o4-mini" in available_models
-            assert available_models["o4-mini"] == ProviderType.OPENAI
+            assert available_models["o4-mini"] == ProviderType.CODEX_CLI
 
             # Should NOT include restricted OpenAI models
             assert "o3" not in available_models
@@ -230,7 +230,7 @@ class TestAutoModeProviderSelection:
 
             # Should include all Gemini models (no restrictions)
             assert "gemini-2.5-flash" in available_models
-            assert available_models["gemini-2.5-flash"] == ProviderType.GOOGLE
+            assert available_models["gemini-2.5-flash"] == ProviderType.GEMINI_CLI
 
         finally:
             # Restore original environment
@@ -259,20 +259,20 @@ class TestAutoModeProviderSelection:
             from providers.openai import OpenAIModelProvider
             from providers.xai import XAIModelProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
             ModelProviderRegistry.register_provider(ProviderType.XAI, XAIModelProvider)
 
             # Test model validation - each provider should handle its own models
             # Gemini models
             gemini_provider = ModelProviderRegistry.get_provider_for_model("flash")
             assert gemini_provider is not None
-            assert gemini_provider.get_provider_type() == ProviderType.GOOGLE
+            assert gemini_provider.get_provider_type() == ProviderType.GEMINI_CLI
 
             # OpenAI models
             openai_provider = ModelProviderRegistry.get_provider_for_model("o3")
             assert openai_provider is not None
-            assert openai_provider.get_provider_type() == ProviderType.OPENAI
+            assert openai_provider.get_provider_type() == ProviderType.CODEX_CLI
 
             # XAI models
             xai_provider = ModelProviderRegistry.get_provider_for_model("grok")
@@ -310,16 +310,16 @@ class TestAutoModeProviderSelection:
             from providers.openai import OpenAIModelProvider
             from providers.xai import XAIModelProvider
 
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.GEMINI_CLI, GeminiModelProvider)
+            ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
             ModelProviderRegistry.register_provider(ProviderType.XAI, XAIModelProvider)
 
             # Test that providers resolve aliases correctly
             test_cases = [
-                ("flash", ProviderType.GOOGLE, "gemini-2.5-flash"),
-                ("pro", ProviderType.GOOGLE, "gemini-3-pro-preview"),  # "pro" now resolves to gemini-3-pro-preview
-                ("mini", ProviderType.OPENAI, "gpt-5-mini"),  # "mini" now resolves to gpt-5-mini
-                ("o3mini", ProviderType.OPENAI, "o3-mini"),
+                ("flash", ProviderType.GEMINI_CLI, "gemini-2.5-flash"),
+                ("pro", ProviderType.GEMINI_CLI, "gemini-3-pro-preview"),  # "pro" now resolves to gemini-3-pro-preview
+                ("mini", ProviderType.CODEX_CLI, "gpt-5-mini"),  # "mini" now resolves to gpt-5-mini
+                ("o3mini", ProviderType.CODEX_CLI, "o3-mini"),
                 ("grok", ProviderType.XAI, "grok-4"),
                 ("grok-4.1-fast-reasoning", ProviderType.XAI, "grok-4-1-fast-reasoning"),
             ]

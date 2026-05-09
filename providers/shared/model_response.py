@@ -16,7 +16,7 @@ class ModelResponse:
     usage: dict[str, int] = field(default_factory=dict)
     model_name: str = ""
     friendly_name: str = ""
-    provider: ProviderType = ProviderType.GOOGLE
+    provider: ProviderType = ProviderType.GEMINI_CLI
     metadata: dict[str, Any] = field(default_factory=dict)
 
     @property

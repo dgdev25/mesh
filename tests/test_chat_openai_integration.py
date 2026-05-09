@@ -56,7 +56,7 @@ async def test_chat_auto_mode_with_openai(monkeypatch, tmp_path):
         ModelProviderRegistry.reset_for_testing()
         from providers.openai import OpenAIModelProvider
 
-        ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
 
         # Inject HTTP transport (records or replays depending on cassette state)
         inject_transport(monkeypatch, CASSETTE_PATH)
@@ -119,7 +119,7 @@ async def test_chat_openai_continuation(monkeypatch, tmp_path):
         ModelProviderRegistry.reset_for_testing()
         from providers.openai import OpenAIModelProvider
 
-        ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
+        ModelProviderRegistry.register_provider(ProviderType.CODEX_CLI, OpenAIModelProvider)
 
         inject_transport(monkeypatch, CASSETTE_CONTINUATION_PATH)
 
