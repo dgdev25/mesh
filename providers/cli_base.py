@@ -2,14 +2,13 @@
 
 import asyncio
 import logging
-import subprocess
 import time
 from abc import abstractmethod
-from typing import List, Optional
+from typing import List
 
 from .base import ModelProvider
-from .shared import ModelResponse, ProviderType
-from .shared.cli_output import CliError, CliNotFoundError, CliOutput, CliResponseParser, CliTimeoutError
+from .shared import ModelResponse
+from .shared.cli_output import CliError, CliNotFoundError, CliOutput, CliTimeoutError
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +128,7 @@ class CliProvider(ModelProvider):
         except asyncio.CancelledError as e:
             duration_ms = (time.time() - start_time) * 1000
             raise CliError(f"CLI execution cancelled: {command_str}") from e
-        except (CliTimeoutError, CliNotFoundError) as e:
+        except (CliTimeoutError, CliNotFoundError):
             # Re-raise our own exceptions unchanged
             raise
         except Exception as e:

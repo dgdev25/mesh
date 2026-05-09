@@ -1,6 +1,5 @@
 """Model provider registry for managing available providers."""
 
-import asyncio
 import logging
 from shutil import which
 from typing import TYPE_CHECKING, Optional
@@ -60,7 +59,7 @@ class ModelProviderRegistry:
         """Register a new provider class.
 
         Args:
-            provider_type: Type of the provider (e.g., ProviderType.GOOGLE)
+            provider_type: Type of the provider (e.g., ProviderType.GEMINI_CLI)
             provider_class: Class that implements ModelProvider interface
         """
         instance = cls()
@@ -114,9 +113,9 @@ class ModelProviderRegistry:
         """Get provider instance for a specific model name.
 
         Provider priority order:
-        1. Native APIs (GOOGLE, OPENAI) - Most direct and efficient
-        2. CUSTOM - For local/private models with specific endpoints
-        3. OPENROUTER - Catch-all for cloud models via unified API
+        1. GEMINI_CLI — local subprocess to ``gemini`` binary
+        2. CODEX_CLI — local subprocess to ``codex`` binary
+        3. OPENROUTER — HTTP fallback (catch-all for everything else)
 
         Args:
             model_name: Name of the model (e.g., "gemini-2.5-flash", "gpt5")
