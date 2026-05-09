@@ -179,8 +179,14 @@ CLAUDE.local.md
 .claude/settings.local.json
 
 # Standalone mode files
+.mesh_venv/
 .pal_venv/
 .docker_cleaned
+
+# Ephemeral agent/swarm state
+.swarm/
+.claude/memory/
+.claude/commands-disabled/
 logs/
 *.backup
 *.backup-*.json

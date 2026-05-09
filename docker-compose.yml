@@ -1,18 +1,18 @@
 services:
-  pal-mcp:
+  mesh:
     build:
       context: .
       dockerfile: Dockerfile
       target: runtime
-    image: pal-mcp-server:latest
-    container_name: pal-mcp-server
-    
+    image: mesh:latest
+    container_name: mesh
+
     # Container labels for traceability
     labels:
-      - "com.pal-mcp.service=pal-mcp-server"
-      - "com.pal-mcp.version=1.0.0"
-      - "com.pal-mcp.environment=production"
-      - "com.pal-mcp.description=AI-powered Model Context Protocol server"
+      - "com.mesh.service=mesh"
+      - "com.mesh.version=1.0.0"
+      - "com.mesh.environment=production"
+      - "com.mesh.description=AI-powered Model Context Protocol server"
     
     # Environment variables
     environment:
@@ -51,12 +51,12 @@ services:
     # Volumes for persistent data
     volumes:
       - ./logs:/app/logs
-      - pal-mcp-config:/app/conf
+      - mesh-config:/app/conf
       - /etc/localtime:/etc/localtime:ro
     
     # Network configuration
     networks:
-      - pal-network
+      - mesh-network
     
     # Resource limits
     deploy:
@@ -89,12 +89,12 @@ services:
 
 # Named volumes
 volumes:
-  pal-mcp-config:
+  mesh-config:
     driver: local
 
 # Networks
 networks:
-  pal-network:
+  mesh-network:
     driver: bridge
     ipam:
       config:

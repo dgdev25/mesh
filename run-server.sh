@@ -1690,18 +1690,18 @@ PY
     ) || true
 
     local gemini_changed=false
-    local gemini_has_pal=false
+    local gemini_has_mesh=false
     [[ "$gemini_status" == CHANGED:* ]] && gemini_changed=true
-    [[ "$gemini_status" == *:HAS_PAL ]] && gemini_has_pal=true
+    [[ "$gemini_status" == *:HAS_MESH ]] && gemini_has_mesh=true
 
-    if [[ "$gemini_has_pal" == true ]]; then
+    if [[ "$gemini_has_mesh" == true ]]; then
         if [[ "$gemini_changed" == true ]]; then
             print_success "Removed legacy Gemini MCP entries"
         fi
         return 0
     fi
 
-    # Ask user if they want to add PAL to Gemini CLI
+    # Ask user if they want to add Mesh to Gemini CLI
     echo ""
     read -p "Configure Mesh for Gemini CLI? (Y/n): " -n 1 -r
     echo ""
@@ -1869,7 +1869,7 @@ PY
             echo ""
             echo "[mcp_servers.pal]"
             echo "command = \"bash\""
-            echo "args = [\"-c\", \"for p in \$(which uvx 2>/dev/null) \$HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \\\"\$p\\\" ] && exec \\\"\$p\\\" --from git+https://github.com/BeehiveInnovations/mesh-mcp-server.git mesh-mcp-server; done; echo 'uvx not found' >&2; exit 1\"]"
+            echo "args = [\"-c\", \"for p in \$(which uvx 2>/dev/null) \$HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \\\"\$p\\\" ] && exec \\\"\$p\\\" --from git+https://github.com/dgdev25/mesh.git mesh-mcp-server; done; echo 'uvx not found' >&2; exit 1\"]"
             echo "tool_timeout_sec = 1200"
             echo ""
             echo "[mcp_servers.pal.env]"
@@ -1894,7 +1894,7 @@ PY
 cat <<'CODExEOF'
 [mcp_servers.pal]
 command = "sh"
-args = ["-c", "exec \$(which uvx 2>/dev/null || echo uvx) --from git+https://github.com/BeehiveInnovations/mesh-mcp-server.git mesh-mcp-server"]
+args = ["-c", "exec \$(which uvx 2>/dev/null || echo uvx) --from git+https://github.com/dgdev25/mesh.git mesh-mcp-server"]
 tool_timeout_sec = 1200
 
 [mcp_servers.pal.env]
@@ -1920,15 +1920,15 @@ CODExEOF
         print_success "Successfully configured Codex CLI"
         echo "  Config: $codex_config"
         echo "  Restart Codex CLI to use Mesh MCP Server"
-        codex_has_pal=true
+        codex_has_mesh=true
     else
         print_info "Codex CLI already configured; refreshing Codex settings..."
     fi
 
-    if [[ "$codex_has_pal" == true ]]; then
+    if [[ "$codex_has_mesh" == true ]]; then
         if ! grep -Eq '^\s*web_search_request\s*=' "$codex_config" 2>/dev/null; then
             echo ""
-            print_info "Web search requests let Codex pull fresh documentation for PAL's API lookup tooling."
+            print_info "Web search requests let Codex pull fresh documentation for Mesh's API lookup tooling."
             read -p "Enable Codex CLI web search requests? (Y/n): " -n 1 -r
             echo ""
             if [[ ! $REPLY =~ ^[Nn]$ ]]; then
@@ -2307,7 +2307,7 @@ display_config_instructions() {
     local script_dir=$(dirname "$server_path")
 
     echo ""
-    local config_header="PAL MCP SERVER CONFIGURATION"
+    local config_header="MESH MCP SERVER CONFIGURATION"
     echo "===== $config_header ====="
     printf '%*s\n' "$((${#config_header} + 12))" | tr ' ' '='
     echo ""
@@ -2446,7 +2446,7 @@ EOF
     cat << EOF
    [mcp_servers.pal]
    command = "bash"
-   args = ["-c", "for p in \$(which uvx 2>/dev/null) \$HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \\\"\$p\\\" ] && exec \\\"\$p\\\" --from git+https://github.com/BeehiveInnovations/mesh-mcp-server.git mesh-mcp-server; done; echo 'uvx not found' >&2; exit 1"]
+   args = ["-c", "for p in \$(which uvx 2>/dev/null) \$HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \\\"\$p\\\" ] && exec \\\"\$p\\\" --from git+https://github.com/dgdev25/mesh.git mesh-mcp-server; done; echo 'uvx not found' >&2; exit 1"]
 
    [mcp_servers.pal.env]
    PATH = "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:\$HOME/.local/bin:\$HOME/.cargo/bin:\$HOME/bin"
@@ -2465,7 +2465,7 @@ display_setup_instructions() {
     echo "===== $setup_header ====="
     printf '%*s\n' "$((${#setup_header} + 12))" | tr ' ' '='
     echo ""
-    print_success "PAL is ready to use!"
+    print_success "Mesh is ready to use!"
     
     # Display enabled/disabled tools if DISABLED_TOOLS is configured
     if [[ -n "${DISABLED_TOOLS:-}" ]]; then
@@ -2566,7 +2566,7 @@ show_help() {
     echo "  $0 --clear-cache Clear Python cache (fixes import issues)"
     echo ""
     echo "For more information, visit:"
-    echo "  https://github.com/BeehiveInnovations/mesh-mcp-server"
+    echo "  https://github.com/dgdev25/mesh"
 }
 
 # Show version only

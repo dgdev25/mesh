@@ -87,7 +87,7 @@ jobs:
           \`\`\`json
           {
             "mcpServers": {
-              "pal-mcp-server": {
+              "mesh": {
                 "command": "docker",
                 "args": [
                   "run", "--rm", "-i",

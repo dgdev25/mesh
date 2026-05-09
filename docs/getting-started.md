@@ -81,7 +81,7 @@ Choose your AI coding assistant and add the corresponding configuration:
       "command": "sh",
       "args": [
         "-c", 
-        "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \"$p\" ] && exec \"$p\" --from git+https://github.com/BeehiveInnovations/pal-mcp-server.git pal-mcp-server; done; echo 'uvx not found' >&2; exit 1"
+        "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \"$p\" ] && exec \"$p\" --from git+https://github.com/dgdev25/mesh.git dgdev25/mesh; done; echo 'uvx not found' >&2; exit 1"
       ],
       "env": {
         "PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:~/.local/bin",
@@ -102,7 +102,7 @@ Create `.mcp.json` in your project root:
       "command": "sh", 
       "args": [
         "-c",
-        "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \"$p\" ] && exec \"$p\" --from git+https://github.com/BeehiveInnovations/pal-mcp-server.git pal-mcp-server; done; echo 'uvx not found' >&2; exit 1"
+        "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \"$p\" ] && exec \"$p\" --from git+https://github.com/dgdev25/mesh.git dgdev25/mesh; done; echo 'uvx not found' >&2; exit 1"
       ],
       "env": {
         "PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:~/.local/bin",
@@ -123,7 +123,7 @@ Edit `~/.gemini/settings.json`:
       "command": "sh",
       "args": [
         "-c",
-        "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \"$p\" ] && exec \"$p\" --from git+https://github.com/BeehiveInnovations/pal-mcp-server.git pal-mcp-server; done; echo 'uvx not found' >&2; exit 1"  
+        "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \"$p\" ] && exec \"$p\" --from git+https://github.com/dgdev25/mesh.git dgdev25/mesh; done; echo 'uvx not found' >&2; exit 1"  
       ],
       "env": {
         "PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:~/.local/bin",
@@ -138,17 +138,17 @@ Edit `~/.gemini/settings.json`:
 Edit `~/.codex/config.toml`:
 
 ```toml
-[mcp_servers.pal]
+[mcp_servers.mesh]
 command = "bash"
-args = ["-c", "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \\\"$p\\\" ] && exec \\\"$p\\\" --from git+https://github.com/BeehiveInnovations/pal-mcp-server.git pal-mcp-server; done; echo 'uvx not found' >&2; exit 1"]
+args = ["-c", "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \\\"$p\\\" ] && exec \\\"$p\\\" --from git+https://github.com/dgdev25/mesh.git dgdev25/mesh; done; echo 'uvx not found' >&2; exit 1"]
 tool_timeout_sec = 1200  # 20 minutes; added automatically by the setup script so upstream providers can respond
 
-[mcp_servers.pal.env]
+[mcp_servers.mesh.env]
 PATH = "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:$HOME/.local/bin:$HOME/.cargo/bin:$HOME/bin"
 GEMINI_API_KEY = "your_api_key_here"
 ```
 
-Enable Codex's built-in web-search tool so PAL's `apilookup` instructions can execute successfully:
+Enable Codex's built-in web-search tool so Mesh's `apilookup` instructions can execute successfully:
 
 ```toml
 [tools]
@@ -168,9 +168,9 @@ Create or edit `~/.qwen/settings.json`:
       "command": "bash",
       "args": [
         "-c",
-        "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \"$p\" ] && exec \"$p\" --from git+https://github.com/BeehiveInnovations/pal-mcp-server.git pal-mcp-server; done; echo 'uvx not found' >&2; exit 1"
+        "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \"$p\" ] && exec \"$p\" --from git+https://github.com/dgdev25/mesh.git dgdev25/mesh; done; echo 'uvx not found' >&2; exit 1"
       ],
-      "cwd": "/path/to/pal-mcp-server",
+      "cwd": "/path/to/mesh",
       "env": {
         "PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:~/.local/bin",
         "GEMINI_API_KEY": "your_api_key_here"
@@ -192,10 +192,10 @@ Edit `~/.config/opencode/opencode.json`:
     "mesh": {
       "type": "local",
       "command": [
-        "/path/to/pal-mcp-server/.pal_venv/bin/python",
-        "/path/to/pal-mcp-server/server.py"
+        "/path/to/mesh/.mesh_venv/bin/python",
+        "/path/to/mesh/server.py"
       ],
-      "cwd": "/path/to/pal-mcp-server",
+      "cwd": "/path/to/mesh",
       "enabled": true,
       "environment": {
         "GEMINI_API_KEY": "your_api_key_here"
@@ -216,7 +216,7 @@ Mesh works in GUI IDEs that speak MCP. The configuration mirrors the CLI example
 1. Open Cursor → `Settings` (`Cmd+,`/`Ctrl+,`) → **Integrations › Model Context Protocol (MCP)**.
 2. Click **Add MCP Server** and supply the following values:
    - Command: `sh`
-   - Args: `-c` and `for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x "$p" ] && exec "$p" --from git+https://github.com/BeehiveInnovations/pal-mcp-server.git pal-mcp-server; done; echo 'uvx not found' >&2; exit 1`
+   - Args: `-c` and `for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x "$p" ] && exec "$p" --from git+https://github.com/dgdev25/mesh.git dgdev25/mesh; done; echo 'uvx not found' >&2; exit 1`
    - Environment (example):
      - `PATH=/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:~/.local/bin`
      - `GEMINI_API_KEY=your_api_key_here`
@@ -232,7 +232,7 @@ Mesh works in GUI IDEs that speak MCP. The configuration mirrors the CLI example
    - Environment: add the API keys you need (e.g. `GEMINI_API_KEY`, `OPENAI_API_KEY`)
 4. Save the JSON snippet the extension generates. VS Code will reload the server automatically the next time you interact with Claude.
 
-👉 Pro tip: If you prefer a one-line command, replace the long loop with `uvx --from git+https://github.com/BeehiveInnovations/pal-mcp-server.git pal-mcp-server`—just make sure `uvx` is on your PATH for every client.
+👉 Pro tip: If you prefer a one-line command, replace the long loop with `uvx --from git+https://github.com/dgdev25/mesh.git dgdev25/mesh`—just make sure `uvx` is on your PATH for every client.
 
 **Benefits of uvx method:**
 - ✅ Zero manual setup required
@@ -244,8 +244,8 @@ Mesh works in GUI IDEs that speak MCP. The configuration mirrors the CLI example
 
 ```bash
 # Clone the repository
-git clone https://github.com/BeehiveInnovations/pal-mcp-server.git
-cd pal-mcp-server
+git clone https://github.com/dgdev25/mesh.git
+cd mesh
 
 # One-command setup (handles everything)
 ./run-server.sh
@@ -327,7 +327,7 @@ You can scope this block at the top level of `settings.json` (applies to every s
 Codex exposes per-server timeouts in `~/.codex/config.toml`. Add (or bump) these keys under `[[mcp_servers.<name>]]`:
 
 ```toml
-[mcp_servers.pal]
+[mcp_servers.mesh]
 command = "..."
 args = ["..."]
 startup_timeout_sec = 300    # default is 10 seconds
@@ -345,7 +345,7 @@ Gemini uses a single `timeout` field per server inside `~/.gemini/settings.json`
   "mcpServers": {
     "mesh": {
       "command": "uvx",
-      "args": ["pal-mcp-server"],
+      "args": ["mesh"],
       "timeout": 300000
     }
   }
@@ -364,62 +364,62 @@ Versions 0.2.1 and newer currently ignore values above ~60 seconds for some tran
 ### For Claude Desktop:
 1. Restart Claude Desktop
 2. Open a new conversation
-3. Try: `"Use pal to list available models"`
+3. Try: `"Use mesh to list available models"`
 
 ### For Claude Code CLI:
 1. Exit any existing Claude session
 2. Run `claude` from your project directory  
-3. Try: `"Use pal to chat about Python best practices"`
+3. Try: `"Use mesh to chat about Python best practices"`
 
 ### For Gemini CLI:
 **Note**: While Mesh MCP connects to Gemini CLI, tool invocation isn't working correctly yet. See [Gemini CLI Setup](gemini-setup.md) for updates.
 
 ### For Qwen Code CLI:
 1. Restart the Qwen Code CLI if it's running (`qwen exit`).
-2. Run `qwen mcp list --scope user` and confirm `pal` shows `CONNECTED`.
-3. Try: `"/mcp"` to inspect available tools or `"Use pal to analyze this repo"`.
+2. Run `qwen mcp list --scope user` and confirm `mesh` shows `CONNECTED`.
+3. Try: `"/mcp"` to inspect available tools or `"Use mesh to analyze this repo"`.
 
 ### For OpenCode CLI:
 1. Restart OpenCode (or run `OpenCode: Reload Config`).
-2. Open **Settings › Tools › MCP** and confirm `pal` is enabled.
-3. Start a new chat and try: `"Use pal to list available models"`.
+2. Open **Settings › Tools › MCP** and confirm `mesh` is enabled.
+3. Start a new chat and try: `"Use mesh to list available models"`.
 
 ### For Codex CLI:
 1. Restart Codex CLI if running
 2. Open a new conversation
-3. Try: `"Use pal to list available models"`
+3. Try: `"Use mesh to list available models"`
 
 ### Test Commands:
 ```
-"Use pal to list available models"
-"Chat with pal about the best approach for API design"
-"Use pal thinkdeep with gemini pro about scaling strategies"  
+"Use mesh to list available models"
+"Chat with mesh about the best approach for API design"
+"Use mesh thinkdeep with gemini pro about scaling strategies"  
 "Debug this error with o3: [paste error]"
 ```
 
 **Note**: Codex CLI provides excellent MCP integration with automatic environment variable configuration when using the setup script.
 
-## Step 5: Start Using PAL
+## Step 5: Start Using Mesh
 
 ### Basic Usage Patterns:
 
 **Let Claude pick the model:**
 ```
-"Use pal to analyze this code for security issues"
-"Debug this race condition with pal"
-"Plan the database migration with pal"
+"Use mesh to analyze this code for security issues"
+"Debug this race condition with mesh"
+"Plan the database migration with mesh"
 ```
 
 **Specify the model:**
 ```  
-"Use pal with gemini pro to review this complex algorithm"
-"Debug with o3 using pal for logical analysis"
-"Get flash to quickly format this code via pal"
+"Use mesh with gemini pro to review this complex algorithm"
+"Debug with o3 using mesh for logical analysis"
+"Get flash to quickly format this code via mesh"
 ```
 
 **Multi-model workflows:**
 ```
-"Use pal to get consensus from pro and o3 on this architecture"
+"Use mesh to get consensus from pro and o3 on this architecture"
 "Code review with gemini, then precommit validation with o3"  
 "Analyze with flash, then deep dive with pro if issues found"
 ```
@@ -435,7 +435,7 @@ Versions 0.2.1 and newer currently ignore values above ~60 seconds for some tran
 
 ## Common Issues and Solutions
 
-### "pal not found" or "command not found"
+### "mesh not found" or "command not found"
 
 **For uvx installations:**
 - Ensure `uv` is installed and in PATH
@@ -444,7 +444,7 @@ Versions 0.2.1 and newer currently ignore values above ~60 seconds for some tran
 
 **For clone installations:**
 - Run `./run-server.sh` again to verify setup
-- Check virtual environment: `which python` should show `.pal_venv/bin/python`
+- Check virtual environment: `which python` should show `.mesh_venv/bin/python`
 
 ### API Key Issues
 
@@ -454,7 +454,7 @@ Versions 0.2.1 and newer currently ignore values above ~60 seconds for some tran
 - Check for extra spaces or quotes around keys
 
 **"Model not available":**
-- Run `"Use pal to list available models"` to see what's configured
+- Run `"Use mesh to list available models"` to see what's configured
 - Check model restrictions in environment variables
 - Verify API key has access to requested models
 

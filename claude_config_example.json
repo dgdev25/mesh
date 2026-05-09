@@ -4,7 +4,7 @@
   "comment3": "For platform-specific examples, see the examples/ directory",
   "mcpServers": {
     "mesh": {
-      "command": "/path/to/mesh/.pal_venv/bin/python",
+      "command": "/path/to/mesh/.mesh_venv/bin/python",
       "args": ["/path/to/mesh/server.py"]
     }
   }

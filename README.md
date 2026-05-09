@@ -271,7 +271,7 @@ For best results when using [Codex CLI](https://developers.openai.com/codex/cli)
 
 **Option A: Clone and Automatic Setup** (recommended)
 ```bash
-git clone https://github.com/BeehiveInnovations/mesh.git
+git clone https://github.com/dgdev25/mesh.git
 cd mesh
 
 # Handles everything: setup, config, API keys from system environment. 
@@ -288,7 +288,7 @@ cd mesh
   "mcpServers": {
     "pal": {
       "command": "bash",
-      "args": ["-c", "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \"$p\" ] && exec \"$p\" --from git+https://github.com/BeehiveInnovations/mesh.git mesh; done; echo 'uvx not found' >&2; exit 1"],
+      "args": ["-c", "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \"$p\" ] && exec \"$p\" --from git+https://github.com/dgdev25/mesh.git mesh; done; echo 'uvx not found' >&2; exit 1"],
       "env": {
         "PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:~/.local/bin",
         "GEMINI_API_KEY": "your-key-here",
@@ -561,4 +561,4 @@ Built with the power of **Multi-Model AI** collaboration 🤝
 
 ### Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=BeehiveInnovations/mesh&type=Date)](https://www.star-history.com/#BeehiveInnovations/mesh&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=dgdev25/mesh&type=Date)](https://www.star-history.com/#dgdev25/mesh&Date)

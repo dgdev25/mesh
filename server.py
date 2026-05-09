@@ -371,7 +371,7 @@ PROMPT_TEMPLATES = {
     "version": {
         "name": "version",
         "description": "Show server version and system information",
-        "template": "Show PAL MCP Server version",
+        "template": "Show Mesh MCP Server version",
     },
 }
 

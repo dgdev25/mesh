@@ -6,8 +6,8 @@ If you're experiencing issues with the Mesh MCP Server, follow these steps:
 
 ### 1. Check MCP Connection
 
-Open Claude Desktop and type `/mcp` to see if pal is connected:
-- ✅ If pal appears in the list, the connection is working
+Open Claude Desktop and type `/mcp` to see if mesh is connected:
+- ✅ If mesh appears in the list, the connection is working
 - ❌ If not listed or shows an error, continue to step 2
 
 ### 2. Launch Claude with Debug Mode
@@ -79,14 +79,14 @@ See [Logging Documentation](logging.md) for more details on accessing logs.
 
 **Python module not found**
 - Run `./run-server.sh` to reinstall dependencies
-- Check virtual environment is activated: should see `.pal_venv` in the Python path
+- Check virtual environment is activated: should see `.mesh_venv` in the Python path
 
 ### 6. Environment Issues
 
 **Virtual Environment Problems**
 ```bash
 # Reset environment completely
-rm -rf .pal_venv
+rm -rf .mesh_venv
 ./run-server.sh
 ```
 

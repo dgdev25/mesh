@@ -22,11 +22,11 @@
     Runs code quality checks with detailed output.
 
 .NOTES
-    Project Author     : BeehiveInnovations
-    Script Author      : GiGiDKR (https://github.com/GiGiDKR)
+    Project Author     : dgdev25
+    Script Author      : dgdev25 (https://github.com/dgdev25)
     Date               : 07-05-2025
     Version            : See project documentation
-    References         : https://github.com/BeehiveInnovations/pal-mcp-server
+    References         : https://github.com/dgdev25/mesh
 #>
 #Requires -Version 5.1
 [CmdletBinding()]
@@ -68,16 +68,16 @@ Write-ColorText "=================================================" -Color Cyan
 $pythonCmd = $null
 $pipCmd = $null
 
-if (Test-Path ".pal_venv") {
+if (Test-Path ".mesh_venv") {
     if ($IsWindows -or $env:OS -eq "Windows_NT") {
-        if (Test-Path ".pal_venv\Scripts\python.exe") {
-            $pythonCmd = ".pal_venv\Scripts\python.exe"
-            $pipCmd = ".pal_venv\Scripts\pip.exe"
+        if (Test-Path ".mesh_venv\Scripts\python.exe") {
+            $pythonCmd = ".mesh_venv\Scripts\python.exe"
+            $pipCmd = ".mesh_venv\Scripts\pip.exe"
         }
     } else {
-        if (Test-Path ".pal_venv/bin/python") {
-            $pythonCmd = ".pal_venv/bin/python"
-            $pipCmd = ".pal_venv/bin/pip"
+        if (Test-Path ".mesh_venv/bin/python") {
+            $pythonCmd = ".mesh_venv/bin/python"
+            $pipCmd = ".mesh_venv/bin/pip"
         }
     }
     
@@ -108,11 +108,11 @@ foreach ($tool in $devTools) {
     
     # Check in venv
     if ($IsWindows -or $env:OS -eq "Windows_NT") {
-        if (Test-Path ".pal_venv\Scripts\$tool.exe") {
+        if (Test-Path ".mesh_venv\Scripts\$tool.exe") {
             $toolFound = $true
         }
     } else {
-        if (Test-Path ".pal_venv/bin/$tool") {
+        if (Test-Path ".mesh_venv/bin/$tool") {
             $toolFound = $true
         }
     }
@@ -152,15 +152,15 @@ if ($devDepsNeeded) {
 
 # Set tool paths
 if ($IsWindows -or $env:OS -eq "Windows_NT") {
-    $ruffCmd = if (Test-Path ".pal_venv\Scripts\ruff.exe") { ".pal_venv\Scripts\ruff.exe" } else { "ruff" }
-    $blackCmd = if (Test-Path ".pal_venv\Scripts\black.exe") { ".pal_venv\Scripts\black.exe" } else { "black" }
-    $isortCmd = if (Test-Path ".pal_venv\Scripts\isort.exe") { ".pal_venv\Scripts\isort.exe" } else { "isort" }
-    $pytestCmd = if (Test-Path ".pal_venv\Scripts\pytest.exe") { ".pal_venv\Scripts\pytest.exe" } else { "pytest" }
+    $ruffCmd = if (Test-Path ".mesh_venv\Scripts\ruff.exe") { ".mesh_venv\Scripts\ruff.exe" } else { "ruff" }
+    $blackCmd = if (Test-Path ".mesh_venv\Scripts\black.exe") { ".mesh_venv\Scripts\black.exe" } else { "black" }
+    $isortCmd = if (Test-Path ".mesh_venv\Scripts\isort.exe") { ".mesh_venv\Scripts\isort.exe" } else { "isort" }
+    $pytestCmd = if (Test-Path ".mesh_venv\Scripts\pytest.exe") { ".mesh_venv\Scripts\pytest.exe" } else { "pytest" }
 } else {
-    $ruffCmd = if (Test-Path ".pal_venv/bin/ruff") { ".pal_venv/bin/ruff" } else { "ruff" }
-    $blackCmd = if (Test-Path ".pal_venv/bin/black") { ".pal_venv/bin/black" } else { "black" }
-    $isortCmd = if (Test-Path ".pal_venv/bin/isort") { ".pal_venv/bin/isort" } else { "isort" }
-    $pytestCmd = if (Test-Path ".pal_venv/bin/pytest") { ".pal_venv/bin/pytest" } else { "pytest" }
+    $ruffCmd = if (Test-Path ".mesh_venv/bin/ruff") { ".mesh_venv/bin/ruff" } else { "ruff" }
+    $blackCmd = if (Test-Path ".mesh_venv/bin/black") { ".mesh_venv/bin/black" } else { "black" }
+    $isortCmd = if (Test-Path ".mesh_venv/bin/isort") { ".mesh_venv/bin/isort" } else { "isort" }
+    $pytestCmd = if (Test-Path ".mesh_venv/bin/pytest") { ".mesh_venv/bin/pytest" } else { "pytest" }
 }
 
 Write-Host ""
@@ -172,25 +172,25 @@ if (!$SkipLinting) {
 
     try {
         Write-Emoji "🔧" "Running ruff linting with auto-fix..." -Color Yellow
-        & $ruffCmd check --fix --exclude test_simulation_files --exclude .pal_venv
+        & $ruffCmd check --fix --exclude test_simulation_files --exclude .mesh_venv
         if ($LASTEXITCODE -ne 0) {
             throw "Ruff linting failed"
         }
 
         Write-Emoji "🎨" "Running black code formatting..." -Color Yellow
-        & $blackCmd . --exclude="test_simulation_files/" --exclude=".pal_venv/"
+        & $blackCmd . --exclude="test_simulation_files/" --exclude=".mesh_venv/"
         if ($LASTEXITCODE -ne 0) {
             throw "Black formatting failed"
         }
 
         Write-Emoji "📦" "Running import sorting with isort..." -Color Yellow
-        & $isortCmd . --skip-glob=".pal_venv/*" --skip-glob="test_simulation_files/*"
+        & $isortCmd . --skip-glob=".mesh_venv/*" --skip-glob="test_simulation_files/*"
         if ($LASTEXITCODE -ne 0) {
             throw "Import sorting failed"
         }
 
         Write-Emoji "✅" "Verifying all linting passes..." -Color Yellow
-        & $ruffCmd check --exclude test_simulation_files --exclude .pal_venv
+        & $ruffCmd check --exclude test_simulation_files --exclude .mesh_venv
         if ($LASTEXITCODE -ne 0) {
             throw "Final linting verification failed"
         }
