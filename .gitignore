@@ -176,7 +176,6 @@ FEATURE_*.md
 CLAUDE.local.md
 
 # Claude Code personal settings
-.claude/settings.local.json
 
 # Standalone mode files
 .mesh_venv/
@@ -185,8 +184,6 @@ CLAUDE.local.md
 
 # Ephemeral agent/swarm state
 .swarm/
-.claude/memory/
-.claude/commands-disabled/
 logs/
 *.backup
 *.backup-*.json
@@ -198,3 +195,4 @@ test_simulation_files/
 .omx/
 .ruff_cache/
 .claude-flow/
+.claude/
