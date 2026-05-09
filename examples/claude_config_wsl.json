@@ -1,7 +1,5 @@
 {
-  "comment": "Windows configuration using WSL with standalone server",
-  "comment2": "Run './run-server.sh' in WSL to set up the environment and get exact paths",
-  "comment3": "Use './run-server.sh -c' to display the correct configuration",
+  "comment": "Windows-via-WSL configuration template — run ./setup.sh inside WSL to auto-register, or paste this into Claude Desktop config manually",
   "mcpServers": {
     "mesh": {
       "command": "wsl.exe",

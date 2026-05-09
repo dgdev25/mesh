@@ -44,7 +44,7 @@ source venv/bin/activate
 ./code_quality_checks.sh
 
 # If you made tool changes, also run simulator tests
-python communication_simulator_test.py
+python -m simulator_tests
 ```
 
 - [ ] All linting passes (ruff, black, isort)

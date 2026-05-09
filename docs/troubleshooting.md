@@ -53,7 +53,7 @@ tail -n 100 logs/mcp_server.log
 tail -f logs/mcp_server.log
 
 # Or use the -f flag when starting to automatically follow logs
-./run-server.sh -f
+tail -f logs/mcp_server.log
 
 # Search for errors
 grep "ERROR" logs/mcp_server.log
@@ -65,7 +65,7 @@ See [Logging Documentation](logging.md) for more details on accessing logs.
 
 **"Connection failed" in Claude Desktop**
 - Ensure the server path is correct in your Claude config
-- Run `./run-server.sh` to verify setup and see configuration
+- Run `./setup.sh` to verify setup and see configuration
 - Check that Python is installed: `python3 --version`
 
 **"API key environment variable is required"**
@@ -77,7 +77,7 @@ See [Logging Documentation](logging.md) for more details on accessing logs.
 - Never use relative paths: `./file.py`
 
 **Python module not found**
-- Run `./run-server.sh` to reinstall dependencies
+- Run `./setup.sh` to reinstall dependencies
 - Check virtual environment is activated: should see `.mesh_venv` in the Python path
 
 ### 6. Environment Issues
@@ -86,13 +86,13 @@ See [Logging Documentation](logging.md) for more details on accessing logs.
 ```bash
 # Reset environment completely
 rm -rf .mesh_venv
-./run-server.sh
+./setup.sh
 ```
 
 **Permission Issues**
 ```bash
 # Ensure script is executable
-chmod +x run-server.sh
+chmod +x setup.sh
 ```
 
 ### 7. Still Having Issues?

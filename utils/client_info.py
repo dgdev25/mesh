@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 # Global cache for client information
 _client_info_cache: Optional[dict[str, Any]] = None
 
-# Mapping of known client names to friendly names
-# This is case-insensitive and checks if the key is contained in the client name
+# Mapping of supported client names to friendly names.
+# Mesh officially supports three MCP clients: Claude Code, Codex CLI, Gemini CLI.
 CLIENT_NAME_MAPPINGS = {
     # Claude variants
     "claude-ai": "Claude",
@@ -25,17 +25,16 @@ CLIENT_NAME_MAPPINGS = {
     "claude-desktop": "Claude",
     "claude-code": "Claude",
     "anthropic": "Claude",
+    # Codex variants
+    "codex-cli": "Codex",
+    "codex": "Codex",
+    "openai": "Codex",
     # Gemini variants
     "gemini-cli-mcp-client": "Gemini",
     "gemini-cli": "Gemini",
     "gemini": "Gemini",
     "google": "Gemini",
-    # Other known clients
-    "cursor": "Cursor",
-    "vscode": "VS Code",
-    "codeium": "Codeium",
-    "copilot": "GitHub Copilot",
-    # Generic MCP clients
+    # Generic MCP clients (used in tests / unknown stdio peers)
     "mcp-client": "MCP Client",
     "test-client": "Test Client",
 }

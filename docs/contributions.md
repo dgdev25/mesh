@@ -8,7 +8,7 @@ Thank you for your interest in contributing to Mesh MCP Server! This guide will 
 2. **Clone your fork** locally
 3. **Set up the development environment**:
    ```bash
-   ./run-server.sh
+   ./setup.sh
    ```
 4. **Create a feature branch** from `main`:
    ```bash
@@ -61,7 +61,7 @@ isort .
 python -m pytest -xvs
 
 # Run simulator tests for tool changes
-python communication_simulator_test.py
+python -m simulator_tests
 ```
 
 **Important**:

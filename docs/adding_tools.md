@@ -154,10 +154,10 @@ never calls out to the assistant model.
 ## 6. Validate the Tool
 
 - Run unit tests that cover any new request/response logic: `python -m pytest tests/ -v -m "not integration"`.
-- Add a simulator scenario in `simulator_tests/communication_simulator_test.py` to exercise the tool end-to-end and
-  run it with `python communication_simulator_test.py --individual <case>` or `--quick` for the fast smoke suite.
+- Add a simulator scenario in `simulator_tests/__main__.py` to exercise the tool end-to-end and
+  run it with `python -m simulator_tests --individual <case>` or `--quick` for the fast smoke suite.
 - If the tool interacts with external providers or multiple models, consider integration coverage via
-  `./run_integration_tests.sh --with-simulator`.
+  `MESH_RUN_CLI_TESTS=1 pytest tests/test_cli_integration.py --with-simulator`.
 
 Following the steps above keeps new tools aligned with the existing infrastructure and avoids drift between the
 documentation and the actual base classes.

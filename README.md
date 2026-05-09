@@ -163,9 +163,7 @@ Continue with clink gemini - implement the recommended feature
 
 **Why rely on one AI model when you can orchestrate them all?**
 
-A Model Context Protocol server that supercharges tools like [Claude Code](https://www.anthropic.com/claude-code), [Codex CLI](https://developers.openai.com/codex/cli), and IDE clients such
-as [Cursor](https://cursor.com) or the [Claude Dev VS Code extension](https://marketplace.visualstudio.com/items?itemName=Anthropic.claude-vscode). **Mesh MCP connects your favorite AI tool
-to multiple AI models** for enhanced code analysis, problem-solving, and collaborative development.
+A Model Context Protocol server that supercharges tools like [Claude Code](https://www.anthropic.com/claude-code) and [Codex CLI](https://developers.openai.com/codex/cli). **Mesh MCP connects your favorite AI tool to multiple AI models** for enhanced code analysis, problem-solving, and collaborative development.
 
 ### True AI Collaboration with Conversation Continuity
 

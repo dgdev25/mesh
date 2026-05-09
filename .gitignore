@@ -196,3 +196,5 @@ logs/
 test_simulation_files/
 .mcp.json
 .omx/
+.ruff_cache/
+.claude-flow/

@@ -9,7 +9,7 @@
 
 ## Important Disclaimer
 
-Mesh MCP is an open-source Model Context Protocol (MCP) server that acts as middleware between AI clients (Claude Code, Codex CLI, Cursor, etc.) and various AI model providers.
+Mesh MCP is an open-source Model Context Protocol (MCP) server that acts as middleware between AI clients (Claude Code, Codex CLI, etc.) and various AI model providers.
 
 **Please understand the following:**
 
@@ -63,7 +63,7 @@ We practice coordinated disclosure. Please allow reasonable time to address issu
 ### Out of Scope
 
 - Issues in upstream AI providers (report to Google, OpenAI, etc. directly)
-- Issues in AI client software (report to Anthropic, OpenAI, Cursor, etc.)
+- Issues in AI client software (report to Anthropic, OpenAI, etc.)
 - AI model behavior or outputs (this is controlled by the AI client and model providers)
 - Social engineering attacks
 - Rate limiting or resource exhaustion on third-party APIs

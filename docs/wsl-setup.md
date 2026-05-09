@@ -34,8 +34,8 @@ npm install -g @anthropic-ai/claude-code
 2. **Run the setup script**:
    ```bash
    # Make the script executable and run it
-   chmod +x run-server.sh
-   ./run-server.sh
+   chmod +x setup.sh
+   ./setup.sh
    ```
 
 3. **Verify Claude Code can find the MCP server**:

@@ -134,9 +134,9 @@ Most MCP clients accept a server config like:
 }
 ```
 
-`run-server.sh` prints the right block for your client (Claude Desktop,
-Claude Code, Cursor, Windsurf, Trae, Gemini CLI, Qwen CLI) and offers to
-write it for you.
+`./setup.sh` registers Mesh with Claude Code automatically. For the
+other supported MCP clients (Codex CLI, Gemini CLI), copy the JSON
+snippet `setup.sh` prints at the end into the client's MCP config.
 
 ---
 

@@ -5,8 +5,8 @@ This project includes comprehensive test coverage through unit tests and integra
 ## Running Tests
 
 ### Prerequisites
-- Environment set up: `./run-server.sh`
-  - Use `./run-server.sh -f` to automatically follow logs after starting
+- Environment set up: `./setup.sh`
+  - Use `tail -f logs/mcp_server.log` to automatically follow logs after starting
 
 ### Unit Tests
 
@@ -37,7 +37,7 @@ To monitor logs during test execution:
 
 ```bash
 # Start server and automatically follow logs
-./run-server.sh -f
+tail -f logs/mcp_server.log
 
 # Or manually monitor main server logs (includes all tool execution details)
 tail -f -n 500 logs/mcp_server.log
@@ -58,13 +58,13 @@ ls -lh logs/mcp_*.log*
 #### Running All Simulator Tests
 ```bash
 # Run all simulator tests
-python communication_simulator_test.py
+python -m simulator_tests
 
 # Run with verbose output for debugging
-python communication_simulator_test.py --verbose
+python -m simulator_tests --verbose
 
 # Keep server logs after tests for inspection
-python communication_simulator_test.py --keep-logs
+python -m simulator_tests --keep-logs
 ```
 
 #### Running Individual Tests
@@ -72,21 +72,21 @@ To run a single simulator test in isolation (useful for debugging or test develo
 
 ```bash
 # Run a specific test by name
-python communication_simulator_test.py --individual basic_conversation
+python -m simulator_tests --individual basic_conversation
 
 # Examples of available tests:
-python communication_simulator_test.py --individual content_validation
-python communication_simulator_test.py --individual cross_tool_continuation
-python communication_simulator_test.py --individual memory_validation
+python -m simulator_tests --individual content_validation
+python -m simulator_tests --individual cross_tool_continuation
+python -m simulator_tests --individual memory_validation
 ```
 
 #### Other Options
 ```bash
 # List all available simulator tests with descriptions
-python communication_simulator_test.py --list-tests
+python -m simulator_tests --list-tests
 
 # Run multiple specific tests (not all)
-python communication_simulator_test.py --tests basic_conversation content_validation
+python -m simulator_tests --tests basic_conversation content_validation
 
 ```
 
@@ -143,7 +143,7 @@ For detailed contribution guidelines, testing requirements, and code quality sta
 python -m pytest -xvs
 
 # Run simulator tests (for tool changes)
-python communication_simulator_test.py
+python -m simulator_tests
 ```
 
 Remember: All tests must pass before submitting a PR. See the [Contributing Guide](./contributions.md) for complete requirements.

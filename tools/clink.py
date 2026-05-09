@@ -78,7 +78,7 @@ class CLinkTool(SimpleTool):
 
     def get_description(self) -> str:
         return (
-            "Link a request to an external AI CLI (Gemini CLI, Qwen CLI, etc.) through Mesh MCP to reuse "
+            "Link a request to an external AI CLI (Gemini CLI, Codex CLI) through Mesh MCP to reuse "
             "their capabilities inside existing workflows."
         )
 
