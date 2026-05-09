@@ -35,7 +35,7 @@ pre-commit install
 **Option 2 - Manual:**
 ```bash
 # Run the comprehensive quality checks script
-./code_quality_checks.sh
+ruff check --fix . && pytest
 ```
 
 This script automatically runs:
@@ -120,7 +120,7 @@ Your PR title MUST follow one of these formats:
 Use our [PR template](../.github/pull_request_template.md) and ensure:
 
 - [ ] PR title follows the format guidelines above
-- [ ] Activated venv and ran `./code_quality_checks.sh` (all checks passed 100%)
+- [ ] Activated venv and ran `ruff check --fix . && pytest` (all checks passed 100%)
 - [ ] Self-review completed
 - [ ] Tests added for ALL changes
 - [ ] Documentation updated as needed

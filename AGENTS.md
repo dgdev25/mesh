@@ -14,13 +14,13 @@ Authoritative documentation and samples live in `docs/`, and runtime diagnostics
 ## Build, Test, and Development Commands
 - `source .mesh_venv/bin/activate` – activate the managed Python environment.
 - `./setup.sh` – install dependencies, refresh `.env`, and launch the MCP server locally.
-- `./code_quality_checks.sh` – run Ruff autofix, Black, isort, and the default pytest suite.
+- `ruff check --fix . && pytest` – run Ruff autofix, Black, isort, and the default pytest suite.
 - `python -m simulator_tests --quick` – smoke-test orchestration across tools and providers.
 - `MESH_RUN_CLI_TESTS=1 pytest tests/test_cli_integration.py` – exercise provider-dependent flows against the real gemini and codex CLIs.
 
 Run code quality checks:
 ```bash
-.mesh_venv/bin/activate && ./code_quality_checks.sh
+.mesh_venv/bin/activate && ruff check --fix . && pytest
 ```
 
 For example, this is how we run an individual / all tests:

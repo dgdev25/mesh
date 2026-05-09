@@ -41,7 +41,7 @@ Please provide a clear and concise description of what this PR does.
 source venv/bin/activate
 
 # Run comprehensive code quality checks (recommended)
-./code_quality_checks.sh
+ruff check --fix . && pytest
 
 # If you made tool changes, also run simulator tests
 python -m simulator_tests
@@ -62,7 +62,7 @@ Fixes #(issue number)
 ## Checklist
 
 - [ ] PR title follows the format guidelines above
-- [ ] **Activated venv and ran code quality checks: `source venv/bin/activate && ./code_quality_checks.sh`**
+- [ ] **Activated venv and ran code quality checks: `source venv/bin/activate && ruff check --fix . && pytest`**
 - [ ] Self-review completed
 - [ ] **Tests added for ALL changes** (see Testing section above)
 - [ ] Documentation updated as needed

@@ -137,7 +137,7 @@ For detailed contribution guidelines, testing requirements, and code quality sta
 
 ```bash
 # Run quality checks
-./code_quality_checks.sh
+ruff check --fix . && pytest
 
 # Run unit tests
 python -m pytest -xvs
