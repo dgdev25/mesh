@@ -18,21 +18,16 @@ services:
     environment:
       # Default model configuration
       - DEFAULT_MODEL=${DEFAULT_MODEL:-auto}
-      
-      # API Keys (use Docker secrets in production)
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - XAI_API_KEY=${XAI_API_KEY}
-      - DIAL_API_KEY=${DIAL_API_KEY}
-      - DIAL_API_HOST=${DIAL_API_HOST}
-      - DIAL_API_VERSION=${DIAL_API_VERSION}
+
+      # OpenRouter is the only HTTP fallback (use Docker secrets in production)
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - CUSTOM_API_URL=${CUSTOM_API_URL}
-      - CUSTOM_API_KEY=${CUSTOM_API_KEY}
-      - CUSTOM_MODEL_NAME=${CUSTOM_MODEL_NAME}
-      
+      - OPENROUTER_ALLOWED_MODELS=${OPENROUTER_ALLOWED_MODELS}
+
+      # CLI providers (gemini/codex). Override discovery via these env vars.
+      - GEMINI_CLI_PATH=${GEMINI_CLI_PATH}
+      - CODEX_CLI_PATH=${CODEX_CLI_PATH}
+      - CLI_TIMEOUT_SECONDS=${CLI_TIMEOUT_SECONDS:-30}
+
       # Logging configuration
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - LOG_MAX_SIZE=${LOG_MAX_SIZE:-10MB}

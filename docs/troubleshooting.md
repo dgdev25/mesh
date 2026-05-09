@@ -35,9 +35,8 @@ Check that your API keys are properly set:
 # Check your .env file
 cat .env
 
-# Ensure at least one key is set:
-# GEMINI_API_KEY=your-key-here
-# OPENAI_API_KEY=your-key-here
+# Ensure OPENROUTER_API_KEY is set, or that gemini/codex CLIs are on PATH:
+# OPENROUTER_API_KEY=sk-or-v1-...
 ```
 
 If you need to update your API keys, edit the `.env` file and then restart Claude for changes to take effect.

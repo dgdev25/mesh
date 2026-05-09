@@ -161,24 +161,24 @@ Continue with clink gemini - implement the recommended feature
 
 ---
 
-## Why PAL MCP?
+## Why Mesh MCP?
 
 **Why rely on one AI model when you can orchestrate them all?**
 
 A Model Context Protocol server that supercharges tools like [Claude Code](https://www.anthropic.com/claude-code), [Codex CLI](https://developers.openai.com/codex/cli), and IDE clients such
-as [Cursor](https://cursor.com) or the [Claude Dev VS Code extension](https://marketplace.visualstudio.com/items?itemName=Anthropic.claude-vscode). **PAL MCP connects your favorite AI tool
+as [Cursor](https://cursor.com) or the [Claude Dev VS Code extension](https://marketplace.visualstudio.com/items?itemName=Anthropic.claude-vscode). **Mesh MCP connects your favorite AI tool
 to multiple AI models** for enhanced code analysis, problem-solving, and collaborative development.
 
 ### True AI Collaboration with Conversation Continuity
 
-PAL supports **conversation threading** so your CLI can **discuss ideas with multiple AI models, exchange reasoning, get second opinions, and even run collaborative debates between models** to help you reach deeper insights and better solutions.
+Mesh supports **conversation threading** so your CLI can **discuss ideas with multiple AI models, exchange reasoning, get second opinions, and even run collaborative debates between models** to help you reach deeper insights and better solutions.
 
 Your CLI always stays in control but gets perspectives from the best AI for each subtask. Context carries forward seamlessly across tools and models, enabling complex workflows like: code reviews with multiple models → automated planning → implementation → pre-commit validation.
 
 > **You're in control.** Your CLI of choice orchestrates the AI team, but you decide the workflow. Craft powerful prompts that bring in Gemini Pro, GPT 5, Flash, or local offline models exactly when needed.
 
 <details>
-<summary><b>Reasons to Use PAL MCP</b></summary>
+<summary><b>Reasons to Use Mesh MCP</b></summary>
 
 A typical workflow with Claude Code as an example:
 
@@ -192,7 +192,7 @@ A typical workflow with Claude Code as an example:
 
 5. **True Conversation Continuity** - Full context flows across tools and models - Gemini remembers what O3 said 10 steps ago
 
-6. **Model-Specific Strengths** - Extended thinking with Gemini Pro, blazing speed with Flash, strong reasoning with O3, privacy with local Ollama
+6. **Model-Specific Strengths** — Extended thinking with Gemini 2.5 Pro, blazing speed with Flash, strong reasoning with O3, broad coverage via OpenRouter
 
 7. **Professional Code Reviews** - Multi-pass analysis with severity levels, actionable feedback, and consensus from multiple AI experts
 
@@ -228,7 +228,7 @@ and review into consideration to aid with its final pre-commit review.
 **Think of it as Claude Code _for_ Claude Code.** This MCP isn't magic. It's just **super-glue**.
 
 > **Remember:** Claude stays in full control — but **YOU** call the shots.
-> PAL is designed to have Claude engage other models only when needed — and to follow through with meaningful back-and-forth.
+> Mesh is designed to have Claude engage other models only when needed — and to follow through with meaningful back-and-forth.
 > **You're** the one who crafts the powerful prompt that makes Claude bring in Gemini, Flash, O3 — or fly solo.
 > You're the guide. The prompter. The puppeteer.
 > #### You are the AI - **Actually Intelligent**.
@@ -256,65 +256,35 @@ For best results when using [Codex CLI](https://developers.openai.com/codex/cli)
 
 ## Quick Start (5 minutes)
 
-**Prerequisites:** Python 3.10+, Git, [uv installed](https://docs.astral.sh/uv/getting-started/installation/)
+**Prerequisites:** Python 3.10+, Git. Optional: [uv](https://docs.astral.sh/uv/getting-started/installation/) for the uvx install path.
 
-**1. Get API Keys** (choose one or more):
-- **[OpenRouter](https://openrouter.ai/)** - Access multiple models with one API
-- **[Gemini](https://makersuite.google.com/app/apikey)** - Google's latest models
-- **[OpenAI](https://platform.openai.com/api-keys)** - O3, GPT-5 series
-- **[Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/)** - Enterprise deployments of GPT-4o, GPT-4.1, GPT-5 family
-- **[X.AI](https://console.x.ai/)** - Grok models
-- **[DIAL](https://dialx.ai/)** - Vendor-agnostic model access
-- **[Ollama](https://ollama.ai/)** - Local models (free)
+**1. Pick at least one backend:**
+- **[Gemini CLI](https://github.com/google-gemini/gemini-cli)** — `npm i -g @google/gemini-cli && gemini login`
+- **[Codex CLI](https://github.com/openai/codex)** — `npm i -g @openai/codex && codex login`
+- **[OpenRouter](https://openrouter.ai/)** — get an API key, set `OPENROUTER_API_KEY` in `.env`
 
-**2. Install** (choose one):
-
-**Option A: Clone and Automatic Setup** (recommended)
+**2. Install** (clone + auto-setup):
 ```bash
 git clone https://github.com/dgdev25/mesh.git
 cd mesh
-
-# Handles everything: setup, config, API keys from system environment. 
-# Auto-configures Claude Desktop, Claude Code, Gemini CLI, Codex CLI, Qwen CLI
-# Enable / disable additional settings in .env
-./run-server.sh  
+./run-server.sh        # creates .mesh_venv, installs deps, prints client config
 ```
 
-**Option B: Instant Setup with [uvx](https://docs.astral.sh/uv/getting-started/installation/)**
-```json
-// Add to ~/.claude/settings.json or .mcp.json
-// Don't forget to add your API keys under env
-{
-  "mcpServers": {
-    "pal": {
-      "command": "bash",
-      "args": ["-c", "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \"$p\" ] && exec \"$p\" --from git+https://github.com/dgdev25/mesh.git mesh; done; echo 'uvx not found' >&2; exit 1"],
-      "env": {
-        "PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:~/.local/bin",
-        "GEMINI_API_KEY": "your-key-here",
-        "DISABLED_TOOLS": "analyze,refactor,testgen,secaudit,docgen,tracer",
-        "DEFAULT_MODEL": "auto"
-      }
-    }
-  }
-}
+**3. Start using:**
+```
+"Use mesh chat with gemini-2.5-pro to review this auth flow"
+"Get consensus from gpt-5 and opus on whether to use Redis or Postgres for queues"
+"Use mesh debug with o3 to find the race condition"
 ```
 
-**3. Start Using!**
-```
-"Use pal to analyze this code for security issues with gemini pro"
-"Debug this error with o3 and then get flash to suggest optimizations"
-"Plan the migration strategy with pal, get consensus from multiple models"
-"clink with cli_name=\"gemini\" role=\"planner\" to draft a phased rollout plan"
-```
-
-👉 **[Complete Setup Guide](docs/getting-started.md)** with detailed installation, configuration for Gemini / Codex / Qwen, and troubleshooting
-👉 **[Cursor & VS Code Setup](docs/getting-started.md#ide-clients)** for IDE integration instructions
-📺 **[Watch tools in action](#-watch-tools-in-action)** to see real-world examples
+👉 **[Complete Setup Guide](docs/getting-started.md)** — installation, MCP client configuration, troubleshooting
+👉 **[Configuration Reference](docs/configuration.md)** — every env var documented
 
 ## Provider Configuration
 
-PAL activates any provider that has credentials in your `.env`. See `.env.example` for deeper customization.
+Mesh auto-detects the `gemini` and `codex` CLIs on PATH and registers OpenRouter
+when `OPENROUTER_API_KEY` is set. At least one of the three must be available.
+See `.env.example` for the full env-var list.
 
 ## Core Tools
 
@@ -382,19 +352,12 @@ DISABLED_TOOLS=
 // In ~/.claude/settings.json or .mcp.json
 {
   "mcpServers": {
-    "pal": {
+    "mesh": {
       "env": {
-        // Tool configuration
         "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
-        "DEFAULT_MODEL": "pro",
+        "DEFAULT_MODEL": "auto",
         "DEFAULT_THINKING_MODE_THINKDEEP": "high",
-        
-        // API configuration
-        "GEMINI_API_KEY": "your-gemini-key",
-        "OPENAI_API_KEY": "your-openai-key",
         "OPENROUTER_API_KEY": "your-openrouter-key",
-        
-        // Logging and performance
         "LOG_LEVEL": "INFO",
         "CONVERSATION_TIMEOUT_HOURS": "6",
         "MAX_CONVERSATION_TURNS": "50"
@@ -409,7 +372,7 @@ DISABLED_TOOLS=
 // Remove or empty the DISABLED_TOOLS to enable everything
 {
   "mcpServers": {
-    "pal": {
+    "mesh": {
       "env": {
         "DISABLED_TOOLS": ""
       }
@@ -445,7 +408,7 @@ DISABLED_TOOLS=
 
 **Multi-model consensus debate:**
 
-[PAL Consensus Debate](https://github.com/user-attachments/assets/76a23dd5-887a-4382-9cf0-642f5cf6219e)
+[Mesh Consensus Debate](https://github.com/user-attachments/assets/76a23dd5-887a-4382-9cf0-642f5cf6219e)
 
 </details>
 
@@ -463,24 +426,24 @@ DISABLED_TOOLS=
 <details>
 <summary><b>API Lookup Tool</b> - Current vs outdated API documentation</summary>
 
-**Without PAL - outdated APIs:**
+**Without Mesh - outdated APIs:**
 
-[API without PAL](https://github.com/user-attachments/assets/01a79dc9-ad16-4264-9ce1-76a56c3580ee)
+[API without Mesh](https://github.com/user-attachments/assets/01a79dc9-ad16-4264-9ce1-76a56c3580ee)
 
-**With PAL - current APIs:**
+**With Mesh - current APIs:**
 
-[API with PAL](https://github.com/user-attachments/assets/5c847326-4b66-41f7-8f30-f380453dce22)
+[API with Mesh](https://github.com/user-attachments/assets/5c847326-4b66-41f7-8f30-f380453dce22)
 
 </details>
 
 <details>
 <summary><b>Challenge Tool</b> - Critical thinking vs reflexive agreement</summary>
 
-**Without PAL:**
+**Without Mesh:**
 
 ![without_pal@2x](https://github.com/user-attachments/assets/64f3c9fb-7ca9-4876-b687-25e847edfd87)
 
-**With PAL:**
+**With Mesh:**
 
 ![with_pal@2x](https://github.com/user-attachments/assets/9d72f444-ba53-4ab1-83e5-250062c6ee70)
 
@@ -495,8 +458,8 @@ DISABLED_TOOLS=
 - **[Context revival](docs/context-revival.md)** - Continue conversations even after context resets
 
 **Model Support**
-- **Multiple providers** - Gemini, OpenAI, Azure, X.AI, OpenRouter, DIAL, Ollama
-- **Latest models** - GPT-5, Gemini 3.0 Pro, O3, Grok-4, local Llama
+- **Three backends** — Gemini CLI, Codex CLI, and OpenRouter (HTTPS fallback)
+- **Latest models** — GPT-5, Gemini 2.5 / 3 Pro, O3, Claude Opus/Sonnet via OpenRouter
 - **[Thinking modes](docs/advanced-usage.md#thinking-modes)** - Control reasoning depth vs cost
 - **Vision support** - Analyze images, diagrams, screenshots
 
