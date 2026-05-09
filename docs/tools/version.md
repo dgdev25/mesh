@@ -7,7 +7,7 @@ The `version` tool provides information about the Mesh MCP Server version, confi
 ## Usage
 
 ```
-"Get pal to show its version"
+"Get mesh to show its version"
 ```
 
 ## Key Features

@@ -153,9 +153,9 @@ Each preset points to role-specific prompts in `systemprompts/clink/`. Duplicate
 ## When to Use Clink vs Other Tools
 
 - **Use `clink`** for: Leveraging external CLI capabilities (Gemini's web search, 1M context), specialized CLI features, cross-CLI collaboration
-- **Use `chat`** for: Direct model-to-model conversations within PAL
-- **Use `planner`** for: PAL's native planning workflows with step validation
-- **Use `codereview`** for: PAL's structured code review with severity levels
+- **Use `chat`** for: Direct model-to-model conversations within Mesh
+- **Use `planner`** for: Mesh's native planning workflows with step validation
+- **Use `codereview`** for: Mesh's structured code review with severity levels
 
 ## Setup Requirements
 

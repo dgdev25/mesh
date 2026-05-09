@@ -42,7 +42,7 @@ A straightforward rubric that mirrors typical provider tiers:
 | 15–17 | Strong general models with large context (O3 Pro, DeepSeek R1)                            |
 | 12–14 | Balanced assistants (Claude Opus/Sonnet, Mistral Large)                                   |
 | 9–11  | Fast distillations (Gemini Flash, GPT-5 Mini, Mistral medium)                             |
-| 6–8   | Local or efficiency-focused models (Llama 3 70B, Claude Haiku)                            |
+| 6–8   | Efficiency-focused models (Claude Haiku, Llama 3 70B via OpenRouter)                            |
 | ≤5    | Experimental/lightweight models                                                           |
 
 Record the reasoning for your scores so future updates stay consistent.

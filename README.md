@@ -160,30 +160,6 @@ python -m simulator_tests --quick                          # end-to-end MCP scen
 
 ---
 
-## 📺 Watch Tools In Action
-
-<details>
-<summary><b>Chat tool</b> — collaborative decision making</summary>
-
-[Chat: Redis or Memcached](https://github.com/user-attachments/assets/41076cfe-dd49-4dfc-82f5-d7461b34705d)
-[Chat: Multi-turn continuation](https://github.com/user-attachments/assets/37bd57ca-e8a6-42f7-b5fb-11de271e95db)
-</details>
-
-<details>
-<summary><b>Consensus tool</b> — multi-model debate</summary>
-
-[Mesh Consensus Debate](https://github.com/user-attachments/assets/76a23dd5-887a-4382-9cf0-642f5cf6219e)
-</details>
-
-<details>
-<summary><b>API Lookup tool</b> — current vs outdated docs</summary>
-
-[Without Mesh](https://github.com/user-attachments/assets/01a79dc9-ad16-4264-9ce1-76a56c3580ee)
-[With Mesh](https://github.com/user-attachments/assets/5c847326-4b66-41f7-8f30-f380453dce22)
-</details>
-
----
-
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).

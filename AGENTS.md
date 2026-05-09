@@ -16,7 +16,7 @@ Authoritative documentation and samples live in `docs/`, and runtime diagnostics
 - `./setup.sh` – install dependencies, refresh `.env`, and launch the MCP server locally.
 - `./code_quality_checks.sh` – run Ruff autofix, Black, isort, and the default pytest suite.
 - `python -m simulator_tests --quick` – smoke-test orchestration across tools and providers.
-- `MESH_RUN_CLI_TESTS=1 pytest tests/test_cli_integration.py` – exercise provider-dependent flows against remote or Ollama models.
+- `MESH_RUN_CLI_TESTS=1 pytest tests/test_cli_integration.py` – exercise provider-dependent flows against the real gemini and codex CLIs.
 
 Run code quality checks:
 ```bash

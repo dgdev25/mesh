@@ -6,7 +6,7 @@ The easiest way to monitor logs is to use the `-f` flag when starting the server
 
 ```bash
 # Start server and automatically follow MCP logs
-./run-server.sh -f
+tail -f logs/mcp_server.log
 ```
 
 This will start the server and immediately begin tailing the MCP server logs.
@@ -63,7 +63,7 @@ Logs use a standardized format with timestamps:
 
 ## Tips
 
-- Use `./run-server.sh -f` for the easiest log monitoring experience
+- Use `tail -f logs/mcp_server.log` for the easiest log monitoring experience
 - Activity logs show only tool-related events for cleaner output
 - Main server logs include all operational details
 - Logs persist across server restarts

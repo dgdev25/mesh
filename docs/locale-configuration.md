@@ -84,7 +84,7 @@ system_prompt = language_instruction + base_system_prompt
    ```
 2. Restart the MCP server:
    ```bash
-   ./run-server.sh
+   ./setup.sh
    ```
 3. Use any tool – responses will be in the specified language.
 

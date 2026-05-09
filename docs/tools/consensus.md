@@ -35,7 +35,7 @@ The following is a hypothetical example designed to demonstrate how one consensu
 
 **For/Against Analysis:**
 ```
-Use pal consensus with flash taking a supportive stance and pro being critical to evaluate whether 
+Use mesh consensus with flash taking a supportive stance and pro being critical to evaluate whether 
 we should migrate from REST to GraphQL for our API
 ```
 

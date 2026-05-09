@@ -26,51 +26,40 @@ Regardless of your default configuration, you can specify models per request:
 - "Use **pro** for deep security analysis of auth.py"
 - "Use **flash** to quickly format this code"
 - "Use **o3** to debug this logic error"
-- "Review with **o4-mini** for balanced analysis"
-- "Use **gpt4.1** for comprehensive codebase analysis"
+- "Review with **gpt-5.2** for balanced analysis"
+- "Use **opus** for comprehensive codebase analysis"
 
-**Claude's Auto Mode Decision Matrix:**
+**Auto-Mode Decision Matrix (real catalogue as of `conf/openrouter_models.json`):**
 
-| Model | Provider | Context | Strengths | Auto Mode Usage |
-|-------|----------|---------|-----------|------------------|
-| **`pro`** (Gemini 3.0 Pro) | Google | 1M tokens | Extended thinking (up to 32K tokens), deep analysis | Complex architecture, security reviews, deep debugging |
-| **`flash`** (Gemini 2.5 Flash) | Google | 1M tokens | Ultra-fast responses with thinking | Quick checks, formatting, simple analysis |
-| **`flash-2.0`** (Gemini 2.0 Flash) | Google | 1M tokens | Latest fast model with audio/video support | Quick analysis with multimodal input |
-| **`flashlite`** (Gemini 2.0 Flash Lite) | Google | 1M tokens | Lightweight text-only model | Fast text processing without vision |
-| **`o3`** | OpenAI | 200K tokens | Strong logical reasoning | Debugging logic errors, systematic analysis |
-| **`o3-mini`** | OpenAI | 200K tokens | Balanced speed/quality | Moderate complexity tasks |
-| **`o4-mini`** | OpenAI | 200K tokens | Latest reasoning model | Optimized for shorter contexts |
-| **`gpt4.1`** | OpenAI | 1M tokens | Latest GPT-4 with extended context | Large codebase analysis, comprehensive reviews |
-| **`gpt5.2`** (GPT-5.2) | OpenAI | 400K tokens | Flagship reasoning model with configurable thinking effort | Complex problems, balanced agent/coding flows |
-| **`gpt5.1-codex`** (GPT-5.1 Codex) | OpenAI | 400K tokens | Agentic coding specialization (Responses API) | Advanced coding tasks, structured code generation |
-| **`gpt5.1-codex-mini`** (GPT-5.1 Codex mini) | OpenAI | 400K tokens | Cost-efficient Codex variant with streaming | Balanced coding tasks, cost-conscious development |
-| **`gpt5`** (GPT-5) | OpenAI | 400K tokens | Advanced model with reasoning support | Complex problems requiring advanced reasoning |
-| **`gpt5-mini`** (GPT-5 Mini) | OpenAI | 400K tokens | Efficient variant with reasoning | Balanced performance and capability |
-| **`gpt5-nano`** (GPT-5 Nano) | OpenAI | 400K tokens | Fastest, cheapest GPT-5 variant | Summarization and classification tasks |
-| **`grok-4`** | X.AI | 256K tokens | Latest flagship Grok model with reasoning, vision | Complex analysis, reasoning tasks |
-| **`grok-4.1-fast-reasoning`** | X.AI | 2M tokens | High-performance Grok 4.1 Fast Reasoning with vision | Fast responses and light reasoning |
-| **`llama`** (Llama 3.2) | Custom/Local | 128K tokens | Local inference, privacy | On-device analysis, cost-free processing |
-| **Any model** | OpenRouter | Varies | Access to GPT-4, Claude, Llama, etc. | User-specified or based on task requirements |
+| Alias | Backend | Resolves to | Context | Notes |
+|-------|---------|-------------|---------|-------|
+| **`pro`** | OpenRouter | google/gemini-3-pro-preview | 1M | Frontier reasoning + thinking modes |
+| **`gemini-2.5-pro`** | Gemini CLI | gemini-2.5-pro | 2M | Stable Gemini Pro |
+| **`flash`** | Gemini CLI / OpenRouter | gemini-2.5-flash | 1M | Fast, supports thinking |
+| **`flash-lite`** | Gemini CLI | gemini-2.5-flash-lite | 1M | Lightweight, text-only |
+| **`o3`** | Codex CLI / OpenRouter | openai/o3 | 200K | Strong logical reasoning |
+| **`o3-pro`** | OpenRouter | openai/o3-pro | 200K | Highest-effort o3 variant |
+| **`o3-mini` / `o4-mini`** | Codex CLI / OpenRouter | openai/o3-mini, openai/o4-mini | 200K | Balanced speed/quality |
+| **`gpt-5.3-codex`** | Codex CLI | gpt-5.3-codex | 400K | Default Codex CLI model |
+| **`gpt-5.2`** | OpenRouter | openai/gpt-5.2 | 400K | Flagship general reasoning |
+| **`gpt-5.2-pro`** | OpenRouter | openai/gpt-5.2-pro | 400K | Highest-effort GPT-5.2 |
+| **`gpt-5` / `gpt-5-mini`** | OpenRouter | openai/gpt-5, openai/gpt-5-mini | 400K | General-purpose GPT-5 |
+| **`opus`** | OpenRouter | anthropic/claude-opus-4.5 | 200K | Frontier Anthropic reasoning |
+| **`sonnet` / `sonnet-latest`** | OpenRouter | anthropic/claude-sonnet-4.6 | 1M | Balanced Anthropic model |
+| **`haiku`** | OpenRouter | anthropic/claude-3.5-haiku | 200K | Fastest, cheapest Claude |
+| **`grok`** | OpenRouter | x-ai/grok-4 | 256K | xAI flagship with vision |
+| **`deepseek`** | OpenRouter | deepseek/deepseek-r1-0528 | 65K | Open-weights reasoning |
+| **`mistral-large` / `mistral-small`** | OpenRouter | mistralai/* | 128K | Open-source weights |
+| **`llama` / `llama-4`** | OpenRouter | meta-llama/llama-3.3-70b-instruct, meta-llama/llama-4-maverick-17b-128e-instruct | 128K | Llama family (hosted) |
+| **`qwen`** | OpenRouter | qwen/qwen-2.5-72b-instruct | 128K | Alibaba Qwen 2.5 |
+| **`perplexity` / `sonar`** | OpenRouter | perplexity/llama-3.1-sonar-huge-128k-online | 128K | Online-augmented |
 
-**Mix & Match Backends:** Run with `gemini` and `codex` CLIs installed plus `OPENROUTER_API_KEY` set, and Mesh routes each model to the cheapest path that supports it (CLI first, OpenRouter for everything else).
+Run `mesh listmodels` to see the live catalogue including aliases, capabilities,
+and which backend will serve each model.
 
-**Model Capabilities:**
-- **Gemini Models**: Support thinking modes (minimal to max), web search, 1M context
-  - **Pro 3.0**: Deep analysis with max 32K thinking tokens
-  - **Flash 2.5**: Ultra-fast with thinking support (24K thinking tokens)
-  - **Flash 2.0**: Latest fast model with audio/video input (24K thinking tokens)
-  - **Flash Lite 2.0**: Text-only lightweight model (no thinking support)
-- **O3/O4 Models**: Excellent reasoning, systematic analysis, 200K context
-- **GPT-4.1**: Extended context window (1M tokens), general capabilities
-- **GPT-5.2 Series**: Latest flagship reasoning models, 400K context
-  - **GPT-5.2**: Flagship model with configurable thinking effort and vision
-  - **GPT-5.1 Codex**: Agentic coding specialization (Responses API, non-streaming)
-  - **GPT-5.1 Codex mini**: Cost-efficient Codex variant with streaming support
-- **GPT-5 Series**: Advanced reasoning models, 400K context
-  - **GPT-5**: Full-featured with reasoning support and vision
-  - **GPT-5 Mini**: Balanced efficiency and capability
-  - **GPT-5 Nano**: Optimized for fast, low-cost tasks
-- **Grok-4 / Grok-4.1-fast-reasoning**: Extended thinking support, vision capabilities (256K / 2M context)
+**Mix & Match Backends:** With `gemini` and `codex` CLIs installed plus
+`OPENROUTER_API_KEY` set, Mesh routes each model to the cheapest path that
+supports it (CLI first, OpenRouter for everything else).
 
 ## Model Usage Restrictions
 
@@ -147,7 +136,7 @@ These only apply to models that support customizing token usage for extended thi
 "Get o3 to do a security review of auth/ with thinking mode high"
 
 # Complex debugging, letting claude pick the best model
-"Use pal to debug this race condition with max thinking mode"
+"Use mesh to debug this race condition with max thinking mode"
 
 # Architecture analysis with Gemini 3.0 Pro
 "Analyze the entire src/ directory architecture with high thinking using pro"
@@ -300,15 +289,15 @@ Take a look at these log files saved under subfolder/diagnostics.log there's a b
 crashes at launch. Think hard and go over each line, tallying it with corresponding code within the project. After
 you've performed initial investigation, ask gemini pro to analyze the log files and the related code where you 
 suspect lies the bug and then formulate and implement a bare minimal fix. Must not regress. Perform a precommit
-with pal in the end using gemini pro to confirm we're okay to publish the fix 
+with mesh in the end using gemini pro to confirm we're okay to publish the fix 
 ```
 
 ### Refactor → Review → Implement → Test
 ```
-Use pal to analyze this legacy authentication module for decomposition opportunities. The code is getting hard to 
+Use mesh to analyze this legacy authentication module for decomposition opportunities. The code is getting hard to 
 maintain and we need to break it down. Use gemini pro with high thinking mode to identify code smells and suggest 
 a modernization strategy. After reviewing the refactoring plan, implement the changes step by step and then 
-generate comprehensive tests with pal to ensure nothing breaks.
+generate comprehensive tests with mesh to ensure nothing breaks.
 ```
 
 ### Tool Selection Guidance
@@ -344,7 +333,7 @@ The Mesh MCP server supports vision-capable models for analyzing images, diagram
 **Usage Examples:**
 ```bash
 # Debug with error screenshots
-"Use pal to debug this error with the stack trace screenshot and error.py"
+"Use mesh to debug this error with the stack trace screenshot and error.py"
 
 # Architecture analysis with diagrams  
 "Analyze this system architecture diagram with gemini pro for bottlenecks"
