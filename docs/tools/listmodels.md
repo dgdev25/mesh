@@ -43,23 +43,34 @@ The tool displays:
 ## Example Output
 
 ```
-📋 Available Models by Provider
+# Available AI Models
 
-🔹 Google (Gemini) - ✅ Configured
-  • pro (gemini-2.5-pro) - 1M context, thinking modes
-  • flash (gemini-2.0-flash-experimental) - 1M context, ultra-fast
+## Gemini CLI ✅
+**Status**: Configured and available
 
-🔹 OpenAI - ✅ Configured  
-  • o3 (o3) - 200K context, strong reasoning
-  • o3-mini (o3-mini) - 200K context, balanced
-  • o4-mini (o4-mini) - 200K context, latest reasoning
+**Models**:
+- `gemini-2.5-pro`     — 2M context, extended thinking
+- `gemini-2.5-flash`   — 1M context, fast
+- `gemini-2.5-flash-lite` — 1M context, lightweight
 
-🔹 Custom/Local - ✅ Configured
-  • local-llama (llama3.2) - 128K context, local inference
-  • Available at: http://localhost:11434/v1
+## Codex CLI ✅
+**Status**: Configured and available
 
-🔹 OpenRouter - ❌ Not configured
-  Set OPENROUTER_API_KEY to enable access to Claude, GPT-4, and more models
+**Models**:
+- `gpt-5.3-codex`      — 400K context (default)
+- `gpt-5.1-codex`      — 400K context
+- `gpt-5.1-codex-mini` — 400K context, cost-efficient
+
+## OpenRouter ✅
+**Status**: Configured and available
+
+**Top models** (35 total in conf/openrouter_models.json):
+- `opus`     → anthropic/claude-opus-4.5
+- `sonnet`   → anthropic/claude-sonnet-4.5
+- `pro`      → google/gemini-3-pro-preview
+- `gpt-5.2`  → openai/gpt-5.2
+- `grok`     → x-ai/grok-4
+- `deepseek` → deepseek/deepseek-r1-0528
 ```
 
 ## When to Use ListModels

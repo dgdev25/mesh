@@ -17,7 +17,7 @@ The secaudit tool implements a **structured 6-step security workflow** that ensu
 1. **Step 1**: Security Scope Analysis - Claude identifies application type, tech stack, attack surface, and compliance requirements
 2. **Step 2**: Authentication & Authorization Assessment - Analyzes auth mechanisms, session management, and access controls
 3. **Step 3**: Input Validation & Data Security - Reviews input handling, data protection, and injection vulnerabilities
-4. **Step 4**: OWASP Top 10 (2021) Review - Systematic assessment of all OWASP categories with specific findings
+4. **Step 4**: OWASP Top 10 (2025) Review - Systematic assessment of all OWASP categories with specific findings
 5. **Step 5**: Dependencies & Infrastructure - Security analysis of third-party components and deployment configurations
 6. **Step 6**: Compliance & Risk Assessment - Evaluation against specified compliance frameworks and risk prioritization
 
@@ -57,7 +57,7 @@ security remediation plan using planner
 
 ## Key Features
 
-- **OWASP Top 10 (2021) systematic assessment** with specific vulnerability identification
+- **OWASP Top 10 (2025) systematic assessment** with specific vulnerability identification
 - **Multi-compliance framework support**: SOC2, PCI DSS, HIPAA, GDPR, FedRAMP
 - **Threat-level aware analysis**: Critical, high, medium, low threat classifications
 - **Technology-specific security patterns**: Web apps, APIs, mobile, cloud, enterprise systems
@@ -136,28 +136,24 @@ Security assessment depth and urgency:
 
 Supported compliance assessments:
 
-- **SOC2**: Security, availability, processing integrity, confidentiality, privacy
-- **PCI DSS**: Payment card industry data security standards
-- **HIPAA**: Healthcare information privacy and security
-- **GDPR**: General data protection regulation compliance
-- **FedRAMP**: Federal risk and authorization management program
-- **ISO27001**: Information security management systems
-- **NIST**: Cybersecurity framework controls
+- **SOC 2**: Security, availability, processing integrity, confidentiality, privacy
+- **PCI DSS 4.0.1**: Payment card industry data security standards (4.0.1 is current as of 2025; 3.2.1 retired March 2024)
+- **HIPAA**: Healthcare information privacy and security (US HHS)
+- **GDPR**: General data protection regulation compliance (EU)
+- **FedRAMP**: Federal risk and authorization management program (US)
+- **ISO/IEC 27001:2022**: Information security management systems
+- **NIST CSF 2.0**: Cybersecurity framework (CSF 2.0 released Feb 2024 — adds the *Govern* function)
 
-## OWASP Top 10 (2021) Coverage
+## OWASP Top 10 Coverage
 
-Systematic assessment includes:
+The tool applies the **latest published OWASP Top 10** at audit time
+(currently the 2025 list, which supersedes 2021). The model follows the
+official categorisation as published at <https://owasp.org/Top10/>, so
+category numbers and names always match the current standard rather than
+a hard-coded list in this repo.
 
-1. **A01 Broken Access Control**: Authorization flaws and privilege escalation
-2. **A02 Cryptographic Failures**: Encryption and data protection issues
-3. **A03 Injection**: SQL, NoSQL, OS, and LDAP injection vulnerabilities
-4. **A04 Insecure Design**: Security design flaws and threat modeling gaps
-5. **A05 Security Misconfiguration**: Configuration and hardening issues
-6. **A06 Vulnerable Components**: Third-party and dependency vulnerabilities
-7. **A07 Identification & Authentication Failures**: Authentication bypass and session management
-8. **A08 Software & Data Integrity Failures**: Supply chain and integrity violations
-9. **A09 Security Logging & Monitoring Failures**: Detection and response capabilities
-10. **A10 Server-Side Request Forgery**: SSRF and related vulnerabilities
+For legacy audits you can pin to an older revision by adding e.g.
+"apply OWASP Top 10 (2021) categories" to the `step` description.
 
 ## Usage Examples
 
