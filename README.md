@@ -7,6 +7,10 @@
 
 </div>
 
+> Forked from **[BeehiveInnovations/pal-mcp-server](https://github.com/BeehiveInnovations/pal-mcp-server)**.
+> Mesh strips the original's six direct API providers (Gemini/OpenAI/Azure/X.AI/DIAL/Custom)
+> and routes everything through local CLIs + OpenRouter instead. See `NOTICE` for full attribution.
+
 **No accumulated API keys. No cloud lock-in. Just CLIs.**
 
 Mesh routes every AI request through local command-line tools (`gemini`, `codex`) when possible, falling back to OpenRouter only when nothing local can serve the model. Same MCP tools, same `ModelResponse` format, same workflows — just a leaner provider layer.
@@ -169,6 +173,7 @@ MIT — see [LICENSE](LICENSE).
 
 ## Acknowledgments
 
+- **[BeehiveInnovations/pal-mcp-server](https://github.com/BeehiveInnovations/pal-mcp-server)** — the upstream project this is forked from
 - [Model Context Protocol](https://modelcontextprotocol.com)
 - [Claude Code](https://claude.ai/code)
 - [Codex CLI](https://developers.openai.com/codex/cli)
