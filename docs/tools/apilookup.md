@@ -5,7 +5,7 @@ Most importantly, it does this within in a sub-process / sub-agent, saving you p
 
 ## Why Use This Tool?
 
-### Without PAL (Using Standard AI)
+### Without Mesh (Using Standard AI)
 ```
 User: "How do I add glass look to a button in Swift?"
 
@@ -21,7 +21,7 @@ Result: You get outdated APIs for iOS 18, not the iOS 26 effect you're after
  
 </div>
 
-### With PAL (Using apilookup)
+### With Mesh (Using apilookup)
 ```
 User: "use apilookup how do I add glass look to a button in swift?"
 
@@ -110,7 +110,7 @@ The AI then performs the actual web searches and synthesizes the results into ac
 
 ## Codex CLI Configuration Reminder
 
-If you use PAL through the Codex CLI, the assistant needs Codex's native web-search tool to fetch current documentation. After adding the PAL MCP entry to `~/.codex/config.toml`, confirm the file also contains:
+If you use Mesh through the Codex CLI, the assistant needs Codex's native web-search tool to fetch current documentation. After adding the Mesh MCP entry to `~/.codex/config.toml`, confirm the file also contains:
 
 ```toml
 [tools]

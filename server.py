@@ -1,8 +1,9 @@
 """
-PAL MCP Server - Main server implementation
+Mesh MCP Server - Main server implementation
 
 This module implements the core MCP (Model Context Protocol) server that provides
-AI-powered tools for code analysis, review, and assistance using multiple AI models.
+AI-powered tools for code analysis, review, and assistance using local CLI tools
+(Gemini CLI, Codex CLI) with OpenRouter as optional fallback.
 
 The server follows the MCP specification to expose various AI tools as callable functions
 that can be used by MCP clients (like Claude). Each tool provides specialized functionality
@@ -152,17 +153,17 @@ except Exception as e:
 
 logger = logging.getLogger(__name__)
 
-# Log PAL_MCP_FORCE_ENV_OVERRIDE configuration for transparency
+# Log MESH_MCP_FORCE_ENV_OVERRIDE configuration for transparency
 if env_override_enabled():
-    logger.info("PAL_MCP_FORCE_ENV_OVERRIDE enabled - .env file values will override system environment variables")
+    logger.info("MESH_MCP_FORCE_ENV_OVERRIDE enabled - .env file values will override system environment variables")
     logger.debug("Environment override prevents conflicts between different AI tools passing cached API keys")
 else:
-    logger.debug("PAL_MCP_FORCE_ENV_OVERRIDE disabled - system environment variables take precedence")
+    logger.debug("MESH_MCP_FORCE_ENV_OVERRIDE disabled - system environment variables take precedence")
 
 
 # Create the MCP server instance with a unique name identifier
 # This name is used by MCP clients to identify and connect to this specific server
-server: Server = Server("pal-server")
+server: Server = Server("mesh-server")
 
 
 # Constants for tool filtering
@@ -377,13 +378,13 @@ PROMPT_TEMPLATES = {
 
 def configure_providers():
     """
-    Configure and validate AI providers based on available API keys.
+    Configure and validate AI providers based on available API keys and CLI tools.
 
-    This function checks for API keys and registers the appropriate providers.
-    At least one valid API key (Gemini or OpenAI) is required.
+    This function checks for API keys and CLI tools, then registers the appropriate providers.
+    At least one valid provider (API key, CLI tool, custom endpoint, or OpenRouter) is required.
 
     Raises:
-        ValueError: If no valid API keys are found or conflicting configurations detected
+        ValueError: If no valid providers are found or conflicting configurations detected
     """
     # Log environment variable status for debugging
     logger.debug("Checking environment variables for API keys...")
@@ -393,9 +394,11 @@ def configure_providers():
         logger.debug(f"  {key}: {'[PRESENT]' if value else '[MISSING]'}")
     from providers import ModelProviderRegistry
     from providers.azure_openai import AzureOpenAIProvider
+    from providers.codex_cli import CodexCliProvider
     from providers.custom import CustomProvider
     from providers.dial import DIALModelProvider
     from providers.gemini import GeminiModelProvider
+    from providers.gemini_cli import GeminiCliProvider
     from providers.openai import OpenAIModelProvider
     from providers.openrouter import OpenRouterProvider
     from providers.shared import ProviderType
@@ -404,6 +407,7 @@ def configure_providers():
 
     valid_providers = []
     has_native_apis = False
+    has_cli_tools = False
     has_openrouter = False
     has_custom = False
 
@@ -492,6 +496,20 @@ def configure_providers():
         else:
             logger.debug("No custom API key provided (using unauthenticated access)")
 
+    # Check for CLI tools (Gemini CLI, Codex CLI)
+    gemini_cli_path = get_env("GEMINI_CLI_PATH")
+    codex_cli_path = get_env("CODEX_CLI_PATH")
+
+    if gemini_cli_path:
+        valid_providers.append("Gemini CLI")
+        has_cli_tools = True
+        logger.info(f"Gemini CLI found at: {gemini_cli_path}")
+
+    if codex_cli_path:
+        valid_providers.append("Codex CLI")
+        has_cli_tools = True
+        logger.info(f"Codex CLI found at: {codex_cli_path}")
+
     # Register providers in priority order:
     # 1. Native APIs first (most direct and efficient)
     registered_providers = []
@@ -518,7 +536,29 @@ def configure_providers():
             registered_providers.append(ProviderType.DIAL.value)
             logger.debug(f"Registered provider: {ProviderType.DIAL.value}")
 
-    # 2. Custom provider second (for local/private models)
+    # 2. CLI tools second (direct binary execution, no API keys needed)
+    if has_cli_tools:
+        if gemini_cli_path:
+            def gemini_cli_factory(api_key=None):
+                cli_timeout = get_env("CLI_TIMEOUT_SECONDS", "30")
+                timeout_s = int(cli_timeout) if cli_timeout.isdigit() else 30
+                return GeminiCliProvider(cli_path=gemini_cli_path, timeout_s=timeout_s)
+
+            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, gemini_cli_factory)
+            registered_providers.append("gemini_cli")
+            logger.debug(f"Registered provider: gemini_cli")
+
+        if codex_cli_path:
+            def codex_cli_factory(api_key=None):
+                cli_timeout = get_env("CLI_TIMEOUT_SECONDS", "30")
+                timeout_s = int(cli_timeout) if cli_timeout.isdigit() else 30
+                return CodexCliProvider(cli_path=codex_cli_path, timeout_s=timeout_s)
+
+            ModelProviderRegistry.register_provider(ProviderType.OPENAI, codex_cli_factory)
+            registered_providers.append("codex_cli")
+            logger.debug(f"Registered provider: codex_cli")
+
+    # 3. Custom provider third (for local/private models)
     if has_custom:
         # Factory function that creates CustomProvider with proper parameters
         def custom_provider_factory(api_key=None):
@@ -530,7 +570,7 @@ def configure_providers():
         registered_providers.append(ProviderType.CUSTOM.value)
         logger.debug(f"Registered provider: {ProviderType.CUSTOM.value}")
 
-    # 3. OpenRouter last (catch-all for everything else)
+    # 4. OpenRouter last (catch-all for everything else)
     if has_openrouter:
         ModelProviderRegistry.register_provider(ProviderType.OPENROUTER, OpenRouterProvider)
         registered_providers.append(ProviderType.OPENROUTER.value)
@@ -543,11 +583,12 @@ def configure_providers():
     # Require at least one valid provider
     if not valid_providers:
         raise ValueError(
-            "At least one API configuration is required. Please set either:\n"
-            "- GEMINI_API_KEY for Gemini models\n"
-            "- OPENAI_API_KEY for OpenAI models\n"
-            "- XAI_API_KEY for X.AI GROK models\n"
-            "- DIAL_API_KEY for DIAL models\n"
+            "At least one provider configuration is required. Please set either:\n"
+            "- GEMINI_CLI_PATH and/or CODEX_CLI_PATH for CLI-based models (no API key needed)\n"
+            "- GEMINI_API_KEY for Gemini API models\n"
+            "- OPENAI_API_KEY for OpenAI API models\n"
+            "- XAI_API_KEY for X.AI GROK API models\n"
+            "- DIAL_API_KEY for DIAL API models\n"
             "- OPENROUTER_API_KEY for OpenRouter (multiple models)\n"
             "- CUSTOM_API_URL for local models (Ollama, vLLM, etc.)"
         )
@@ -558,6 +599,8 @@ def configure_providers():
     priority_info = []
     if has_native_apis:
         priority_info.append("Native APIs (Gemini, OpenAI)")
+    if has_cli_tools:
+        priority_info.append("CLI tools (Gemini CLI, Codex CLI)")
     if has_custom:
         priority_info.append("Custom endpoints")
     if has_openrouter:
@@ -1461,7 +1504,7 @@ async def main():
     configure_providers()
 
     # Log startup message
-    logger.info("PAL MCP Server starting up...")
+    logger.info("Mesh MCP Server starting up...")
     logger.info(f"Log level: {log_level}")
 
     # Note: MCP client info will be logged during the protocol handshake
@@ -1487,7 +1530,7 @@ async def main():
     if IS_AUTO_MODE:
         handshake_instructions = (
             "When the user names a specific model (e.g. 'use chat with gpt5'), send that exact model in the tool call. "
-            "When no model is mentioned, first use the `listmodels` tool from PAL to obtain available models to choose the best one from."
+            "When no model is mentioned, first use the `listmodels` tool from Mesh to obtain available models to choose the best one from."
         )
     else:
         handshake_instructions = (
@@ -1502,7 +1545,7 @@ async def main():
             read_stream,
             write_stream,
             InitializationOptions(
-                server_name="PAL",
+                server_name="Mesh",
                 server_version=__version__,
                 instructions=handshake_instructions,
                 capabilities=ServerCapabilities(
@@ -1514,7 +1557,7 @@ async def main():
 
 
 def run():
-    """Console script entry point for pal-mcp-server."""
+    """Console script entry point for mesh-mcp-server."""
     try:
         asyncio.run(main())
     except KeyboardInterrupt:

@@ -1,6 +1,6 @@
 # WSL (Windows Subsystem for Linux) Setup Guide
 
-This guide provides detailed instructions for setting up PAL MCP Server on Windows using WSL.
+This guide provides detailed instructions for setting up Mesh MCP Server on Windows using WSL.
 
 ## Prerequisites for WSL
 
@@ -43,7 +43,7 @@ npm install -g @anthropic-ai/claude-code
    # List configured MCP servers
    claude mcp list
    
-   # You should see 'pal' listed in the output
+   # You should see 'mesh' listed in the output
    # If not, the setup script will provide the correct configuration
    ```
 
@@ -68,7 +68,7 @@ python3 -m pip install --upgrade pip
 
 ```bash
 # If Claude Code can't connect to the MCP server, check the configuration
-cat ~/.claude.json | grep -A 10 "pal"
+cat ~/.claude.json | grep -A 10 "mesh"
 
 # The configuration should show the correct WSL path to the Python executable
 # Example: "/home/YourName/pal-mcp-server/.pal_venv/bin/python"

@@ -1,12 +1,15 @@
 """Model provider registry for managing available providers."""
 
+import asyncio
 import logging
+from shutil import which
 from typing import TYPE_CHECKING, Optional
 
 from utils.env import get_env
 
 from .base import ModelProvider
-from .shared import ProviderType
+from .shared import ModelResponse, ProviderType
+from .shared.cli_output import CliError, CliNotFoundError, CliTimeoutError
 
 if TYPE_CHECKING:
     from tools.models import ToolModelCategory
@@ -469,3 +472,106 @@ class ModelProviderRegistry:
         instance = cls()
         instance._providers.pop(provider_type, None)
         instance._initialized_providers.pop(provider_type, None)
+
+    @classmethod
+    async def invoke_with_fallback(
+        cls,
+        request,  # ToolRequest type (avoiding circular import)
+    ) -> ModelResponse:
+        """Execute request with provider fallback chain.
+
+        Tries providers in fallback order:
+        1. Gemini CLI (fastest, if available)
+        2. Codex CLI (OpenAI CLI, if available)
+        3. OpenRouter API (catch-all, if OPENROUTER_API_KEY set)
+
+        For each provider, catches specific errors and continues to next:
+        - CliNotFoundError: CLI binary missing, try next
+        - CliTimeoutError: CLI timeout, try next
+        - Other CliError: Invalid output format, try next
+        - Provider not initialized: Skip to next
+
+        Args:
+            request: ToolRequest with prompt, model, temperature, etc.
+
+        Returns:
+            ModelResponse with generated content
+
+        Raises:
+            Exception: When all providers fail or are unavailable
+        """
+        # Determine which providers to try based on availability
+        # Check for CLI providers first (no API key required, just binary in PATH)
+        cli_providers = []
+
+        # Try to detect CLI availability (without full provider init)
+        try:
+            if which("gemini"):
+                cli_providers.append(("gemini_cli", ProviderType.GOOGLE))
+            if which("codex"):
+                cli_providers.append(("codex_cli", ProviderType.OPENAI))
+        except Exception as e:
+            logging.warning(f"Error detecting CLI tools: {e}")
+
+        # Check for OpenRouter API key
+        openrouter_enabled = bool(get_env("OPENROUTER_API_KEY"))
+        api_providers = []
+        if openrouter_enabled:
+            api_providers.append(("openrouter", ProviderType.OPENROUTER))
+
+        # Build provider chain in priority order
+        provider_chain = cli_providers + api_providers
+
+        if not provider_chain:
+            raise RuntimeError(
+                "No providers available. Set OPENROUTER_API_KEY or install gemini/codex CLI"
+            )
+
+        last_error = None
+        for provider_name, provider_type in provider_chain:
+            try:
+                provider = cls.get_provider(provider_type)
+                if provider is None:
+                    logging.warning(f"Provider {provider_name} ({provider_type.value}) not initialized")
+                    continue
+
+                logging.debug(f"Trying {provider_name} for request")
+
+                # Invoke provider asynchronously
+                response = await provider.generate_content(
+                    prompt=request.get("prompt", ""),
+                    model_name=request.get("model_name", ""),
+                    temperature=request.get("temperature", 1.0),
+                    max_output_tokens=request.get("max_output_tokens"),
+                    system_prompt=request.get("system_prompt"),
+                    **request.get("kwargs", {}),
+                )
+
+                if response and response.success:
+                    logging.info(f"Successfully used {provider_name} for request")
+                    return response
+
+                # Provider returned failed response, try next
+                logging.warning(f"{provider_name} returned failed response, trying next")
+                continue
+
+            except (CliNotFoundError, CliTimeoutError, CliError) as e:
+                # Classify error for logging
+                error_class = type(e).__name__
+                logging.warning(f"{provider_name} failed ({error_class}): {e}")
+                last_error = e
+                continue
+
+            except Exception as e:
+                # Unexpected error, still continue to next provider
+                logging.error(f"{provider_name} encountered unexpected error: {e}", exc_info=True)
+                last_error = e
+                continue
+
+        # All providers failed
+        error_msg = "All providers exhausted in fallback chain"
+        if last_error:
+            error_msg = f"{error_msg}: {last_error}"
+
+        logging.error(error_msg)
+        raise RuntimeError(error_msg) from last_error

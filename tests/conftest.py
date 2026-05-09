@@ -1,5 +1,5 @@
 """
-Pytest configuration for PAL MCP Server tests
+Pytest configuration for Mesh MCP Server tests
 """
 
 import asyncio

@@ -53,7 +53,7 @@ Gemini receives the full conversation context from `consensus` including the con
 - **Role-based prompts**: Pre-configured roles for planning, code review, or general questions
 - **Full CLI capabilities**: Gemini can use its own web search, file tools, and latest features
 - **Token efficiency**: File references (not full content) to conserve tokens
-- **Cross-tool collaboration**: Combine with other PAL tools like `planner` → `clink` → `codereview`
+- **Cross-tool collaboration**: Combine with other Mesh tools like `planner` → `clink` → `codereview`
 - **Free tier available**: Gemini offers 1,000 requests/day free with a personal Google account - great for cost savings across tools
 
 ## Available Roles
@@ -120,7 +120,7 @@ then codereview to verify the implementation"
 ## How Clink Works
 
 1. **Your request** - You ask your current CLI to use `clink` with a specific CLI and role
-2. **Background execution** - PAL spawns the configured CLI (e.g., `gemini --output-format json`)
+2. **Background execution** - Mesh spawns the configured CLI (e.g., `gemini --output-format json`)
 3. **Context forwarding** - Your prompt, files (as references), and conversation history are sent as part of the prompt
 4. **CLI processing** - Gemini (or other CLI) uses its own tools: web search, file access, thinking modes
 5. **Seamless return** - Results flow back into your conversation with full context preserved
@@ -131,7 +131,7 @@ then codereview to verify the implementation"
 - **Pre-authenticate CLIs**: Install and configure Gemini CLI first (`npm install -g @google/gemini-cli`)
 - **Choose appropriate roles**: Use `planner` for strategy, `codereviewer` for code, `default` for general questions
 - **Leverage CLI strengths**: Gemini's 1M context for large codebases, web search for current docs
-- **Combine with PAL tools**: Chain `clink` with `planner`, `codereview`, `debug` for powerful workflows
+- **Combine with Mesh tools**: Chain `clink` with `planner`, `codereview`, `debug` for powerful workflows
 - **File efficiency**: Pass file paths, let the CLI decide what to read (saves tokens)
 
 ## Configuration

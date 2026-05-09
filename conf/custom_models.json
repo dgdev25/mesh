@@ -22,6 +22,25 @@
   },
   "models": [
     {
+      "model_name": "qwen2.5-coder:32b",
+      "aliases": [
+        "local",
+        "local-coder",
+        "qwen-coder",
+        "qwen2.5-coder"
+      ],
+      "context_window": 131072,
+      "max_output_tokens": 8192,
+      "supports_extended_thinking": false,
+      "supports_json_mode": true,
+      "supports_function_calling": true,
+      "supports_images": false,
+      "max_image_size_mb": 0.0,
+      "supports_temperature": true,
+      "description": "Qwen2.5-Coder-32B-Instruct via Ollama — local 32B code + security reviews, 128K context",
+      "intelligence_score": 14
+    },
+    {
       "model_name": "llama3.2",
       "aliases": [
         "local-llama",

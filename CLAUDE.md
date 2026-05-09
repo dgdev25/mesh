@@ -1,320 +1,247 @@
-# Claude Development Guide for PAL MCP Server
+# Claude Code Configuration - Claude Flow V3
 
-This file contains essential commands and workflows for developing and maintaining the PAL MCP Server when working with Claude. Use these instructions to efficiently run quality checks, manage the server, check logs, and run tests.
+## Behavioral Rules (Always Enforced)
 
-## Quick Reference Commands
 
-### Code Quality Checks
+1. Think Before Coding
+Don't assume. Don't hide confusion. Surface tradeoffs.
 
-Before making any changes or submitting PRs, always run the comprehensive quality checks:
+Before implementing:
+
+* State your assumptions explicitly. If uncertain, ask.
+* If multiple interpretations exist, present them - don't pick silently.
+* If a simpler approach exists, say so. Push back when warranted.
+* If something is unclear, stop. Name what's confusing. Ask.
+* Always Apply Critical thinking in ANY task
+* Always give Brutal and Honest feedback, no BS
+
+
+2. Simplicity First
+Minimum code that solves the problem. Nothing speculative.
+
+* No features beyond what was asked.
+* No abstractions for single-use code.
+* No "flexibility" or "configurability" that wasn't requested.
+* No error handling for impossible scenarios.
+* If you write 200 lines and it could be 50, rewrite it.
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+3. Surgical Changes
+Touch only what you must. Clean up only your own mess.
+
+When editing existing code:
+
+* Don't "improve" adjacent code, comments, or formatting.
+* Don't refactor things that aren't broken.
+* Match existing style, even if you'd do it differently.
+* If you notice unrelated dead code, mention it - don't delete it.
+When your changes create orphans:
+
+* Remove imports/variables/functions that YOUR changes made unused.
+* Don't remove pre-existing dead code unless asked.
+* The test: Every changed line should trace directly to the user's request.
+
+4. Goal-Driven Execution
+Define success criteria. Loop until verified.
+
+Transform tasks into verifiable goals:
+
+* "Add validation" → "Write tests for invalid inputs, then make them pass"
+* "Fix the bug" → "Write a test that reproduces it, then make it pass"
+* "Refactor X" → "Ensure tests pass before and after"
+For multi-step tasks, state a brief plan:
+
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+
+- Do what has been asked; nothing more, nothing less
+- NEVER create files unless they're absolutely necessary for achieving your goal
+- ALWAYS prefer editing an existing file to creating a new one
+- NEVER proactively create documentation files (*.md) or README files unless explicitly requested
+- NEVER save working files, text/mds, or tests to the root folder
+- Never continuously check status after spawning a swarm — wait for results
+- ALWAYS read a file before editing it
+- NEVER commit secrets, credentials, or .env files
+
+## File Organization
+
+- NEVER save to root folder — use the directories below
+- Use `/src` for source code files
+- Use `/tests` for test files
+- Use `/docs` for documentation and markdown files
+- Use `/config` for configuration files
+- Use `/scripts` for utility scripts
+- Use `/examples` for example code
+
+## Project Architecture
+
+- Follow Domain-Driven Design with bounded contexts
+- Keep files under 500 lines
+- Use typed interfaces for all public APIs
+- Prefer TDD London School (mock-first) for new code
+- Use event sourcing for state changes
+- Ensure input validation at system boundaries
+
+### Project Config
+
+- **Topology**: hierarchical-mesh
+- **Max Agents**: 15
+- **Memory**: hybrid
+- **HNSW**: Enabled
+- **Neural**: Enabled
+
+## Build & Test
 
 ```bash
-# Activate virtual environment first
-source venv/bin/activate
+# Build
+npm run build
 
-# Run all quality checks (linting, formatting, tests)
-./code_quality_checks.sh
+# Test
+npm test
+
+# Lint
+npm run lint
 ```
 
-This script automatically runs:
-- Ruff linting with auto-fix
-- Black code formatting 
-- Import sorting with isort
-- Complete unit test suite (excluding integration tests)
-- Verification that all checks pass 100%
+- ALWAYS run tests after making code changes
+- ALWAYS verify build succeeds before committing
 
-**Run Integration Tests (requires API keys):**
+## Framework Rules
+- NEVER propose or use Tailwind
+
+
+## Security Rules
+
+- NEVER hardcode API keys, secrets, or credentials in source files
+- NEVER commit .env files or any file containing secrets
+- Always validate user input at system boundaries
+- Always sanitize file paths to prevent directory traversal
+- Run `npx @claude-flow/cli@latest security scan` after security-related changes
+
+## Concurrency: 1 MESSAGE = ALL RELATED OPERATIONS
+
+- All operations MUST be concurrent/parallel in a single message
+- Use Claude Code's Task tool for spawning agents, not just MCP
+- ALWAYS batch ALL todos in ONE TodoWrite call (5-10+ minimum)
+- ALWAYS spawn ALL agents in ONE message with full instructions via Task tool
+- ALWAYS batch ALL file reads/writes/edits in ONE message
+- ALWAYS batch ALL Bash commands in ONE message
+
+## Swarm Orchestration
+
+- MUST initialize the swarm using CLI tools when starting complex tasks
+- MUST spawn concurrent agents using Claude Code's Task tool
+- Never use CLI tools alone for execution — Task tool agents do the actual work
+- MUST call CLI tools AND Task tool in ONE message for complex work
+
+### 3-Tier Model Routing (ADR-026)
+
+| Tier | Handler | Latency | Cost | Use Cases |
+|------|---------|---------|------|-----------|
+| **1** | Agent Booster (WASM) | <1ms | $0 | Simple transforms (var→const, add types) — Skip LLM |
+| **2** | Haiku | ~500ms | $0.0002 | Simple tasks, low complexity (<30%) |
+| **3** | Sonnet/Opus | 2-5s | $0.003-0.015 | Complex reasoning, architecture, security (>30%) |
+
+- Always check for `[AGENT_BOOSTER_AVAILABLE]` or `[TASK_MODEL_RECOMMENDATION]` before spawning agents
+- Use Edit tool directly when `[AGENT_BOOSTER_AVAILABLE]`
+
+## Swarm Configuration & Anti-Drift
+
+- ALWAYS use hierarchical topology for coding swarms
+- Keep maxAgents at 6-8 for tight coordination
+- Use specialized strategy for clear role boundaries
+- Use `raft` consensus for hive-mind (leader maintains authoritative state)
+- Run frequent checkpoints via `post-task` hooks
+- Keep shared memory namespace for all agents
+
 ```bash
-# Run integration tests that make real API calls
-./run_integration_tests.sh
-
-# Run integration tests + simulator tests
-./run_integration_tests.sh --with-simulator
+npx @claude-flow/cli@latest swarm init --topology hierarchical --max-agents 8 --strategy specialized
 ```
 
-### Server Management
+## Swarm Execution Rules
 
-#### Setup/Update the Server
+- ALWAYS use `run_in_background: true` for all agent Task calls
+- ALWAYS put ALL agent Task calls in ONE message for parallel execution
+- After spawning, STOP — do NOT add more tool calls or check status
+- Never poll TaskOutput or check swarm status — trust agents to return
+- When agent results arrive, review ALL results before proceeding
+
+## V3 CLI Commands
+
+### Core Commands
+
+| Command | Subcommands | Description |
+|---------|-------------|-------------|
+| `init` | 4 | Project initialization |
+| `agent` | 8 | Agent lifecycle management |
+| `swarm` | 6 | Multi-agent swarm coordination |
+| `memory` | 11 | AgentDB memory with HNSW search |
+| `task` | 6 | Task creation and lifecycle |
+| `session` | 7 | Session state management |
+| `hooks` | 17 | Self-learning hooks + 12 workers |
+| `hive-mind` | 6 | Byzantine fault-tolerant consensus |
+
+### Quick CLI Examples
+
 ```bash
-# Run setup script (handles everything)
-./run-server.sh
+npx @claude-flow/cli@latest init --wizard
+npx @claude-flow/cli@latest agent spawn -t coder --name my-coder
+npx @claude-flow/cli@latest swarm init --v3-mode
+npx @claude-flow/cli@latest memory search --query "authentication patterns"
+npx @claude-flow/cli@latest doctor --fix
 ```
 
-This script will:
-- Set up Python virtual environment
-- Install all dependencies
-- Create/update .env file
-- Configure MCP with Claude
-- Verify API keys
+## Available Agents (60+ Types)
 
-#### View Logs
+### Core Development
+`coder`, `reviewer`, `tester`, `planner`, `researcher`
+
+### Specialized
+`security-architect`, `security-auditor`, `memory-specialist`, `performance-engineer`
+
+### Swarm Coordination
+`hierarchical-coordinator`, `mesh-coordinator`, `adaptive-coordinator`
+
+### GitHub & Repository
+`pr-manager`, `code-review-swarm`, `issue-tracker`, `release-manager`
+
+### SPARC Methodology
+`sparc-coord`, `sparc-coder`, `specification`, `pseudocode`, `architecture`
+
+## Memory Commands Reference
+
 ```bash
-# Follow logs in real-time
-./run-server.sh -f
+# Store (REQUIRED: --key, --value; OPTIONAL: --namespace, --ttl, --tags)
+npx @claude-flow/cli@latest memory store --key "pattern-auth" --value "JWT with refresh" --namespace patterns
 
-# Or manually view logs
-tail -f logs/mcp_server.log
+# Search (REQUIRED: --query; OPTIONAL: --namespace, --limit, --threshold)
+npx @claude-flow/cli@latest memory search --query "authentication patterns"
+
+# List (OPTIONAL: --namespace, --limit)
+npx @claude-flow/cli@latest memory list --namespace patterns --limit 10
+
+# Retrieve (REQUIRED: --key; OPTIONAL: --namespace)
+npx @claude-flow/cli@latest memory retrieve --key "pattern-auth" --namespace patterns
 ```
 
-### Log Management
+## Quick Setup
 
-#### View Server Logs
 ```bash
-# View last 500 lines of server logs
-tail -n 500 logs/mcp_server.log
-
-# Follow logs in real-time
-tail -f logs/mcp_server.log
-
-# View specific number of lines
-tail -n 100 logs/mcp_server.log
-
-# Search logs for specific patterns
-grep "ERROR" logs/mcp_server.log
-grep "tool_name" logs/mcp_activity.log
+claude mcp add claude-flow -- npx -y @claude-flow/cli@latest
+npx @claude-flow/cli@latest daemon start
+npx @claude-flow/cli@latest doctor --fix
 ```
 
-#### Monitor Tool Executions Only
-```bash
-# View tool activity log (focused on tool calls and completions)
-tail -n 100 logs/mcp_activity.log
+## Claude Code vs CLI Tools
 
-# Follow tool activity in real-time
-tail -f logs/mcp_activity.log
+- Claude Code's Task tool handles ALL execution: agents, file ops, code generation, git
+- CLI tools handle coordination via Bash: swarm init, memory, hooks, routing
+- NEVER use CLI tools as a substitute for Task tool agents
 
-# Use simple tail commands to monitor logs
-tail -f logs/mcp_activity.log | grep -E "(TOOL_CALL|TOOL_COMPLETED|ERROR|WARNING)"
-```
+## Support
 
-#### Available Log Files
-
-**Current log files (with proper rotation):**
-```bash
-# Main server log (all activity including debug info) - 20MB max, 10 backups
-tail -f logs/mcp_server.log
-
-# Tool activity only (TOOL_CALL, TOOL_COMPLETED, etc.) - 20MB max, 5 backups  
-tail -f logs/mcp_activity.log
-```
-
-**For programmatic log analysis (used by tests):**
-```python
-# Import the LogUtils class from simulator tests
-from simulator_tests.log_utils import LogUtils
-
-# Get recent logs
-recent_logs = LogUtils.get_recent_server_logs(lines=500)
-
-# Check for errors
-errors = LogUtils.check_server_logs_for_errors()
-
-# Search for specific patterns
-matches = LogUtils.search_logs_for_pattern("TOOL_CALL.*debug")
-```
-
-### Testing
-
-Simulation tests are available to test the MCP server in a 'live' scenario, using your configured
-API keys to ensure the models are working and the server is able to communicate back and forth. 
-
-**IMPORTANT**: After any code changes, restart your Claude session for the changes to take effect.
-
-#### Run All Simulator Tests
-```bash
-# Run the complete test suite
-python communication_simulator_test.py
-
-# Run tests with verbose output
-python communication_simulator_test.py --verbose
-```
-
-#### Quick Test Mode (Recommended for Time-Limited Testing)
-```bash
-# Run quick test mode - 6 essential tests that provide maximum functionality coverage
-python communication_simulator_test.py --quick
-
-# Run quick test mode with verbose output
-python communication_simulator_test.py --quick --verbose
-```
-
-**Quick mode runs these 6 essential tests:**
-- `cross_tool_continuation` - Cross-tool conversation memory testing (chat, thinkdeep, codereview, analyze, debug)
-- `conversation_chain_validation` - Core conversation threading and memory validation
-- `consensus_workflow_accurate` - Consensus tool with flash model and stance testing
-- `codereview_validation` - CodeReview tool with flash model and multi-step workflows
-- `planner_validation` - Planner tool with flash model and complex planning workflows
-- `token_allocation_validation` - Token allocation and conversation history buildup testing
-
-**Why these 6 tests:** They cover the core functionality including conversation memory (`utils/conversation_memory.py`), chat tool functionality, file processing and deduplication, model selection (flash/flashlite/o3), and cross-tool conversation workflows. These tests validate the most critical parts of the system in minimal time.
-
-**Note:** Some workflow tools (analyze, codereview, planner, consensus, etc.) require specific workflow parameters and may need individual testing rather than quick mode testing.
-
-#### Run Individual Simulator Tests (For Detailed Testing)
-```bash
-# List all available tests
-python communication_simulator_test.py --list-tests
-
-# RECOMMENDED: Run tests individually for better isolation and debugging
-python communication_simulator_test.py --individual basic_conversation
-python communication_simulator_test.py --individual content_validation
-python communication_simulator_test.py --individual cross_tool_continuation
-python communication_simulator_test.py --individual memory_validation
-
-# Run multiple specific tests
-python communication_simulator_test.py --tests basic_conversation content_validation
-
-# Run individual test with verbose output for debugging
-python communication_simulator_test.py --individual memory_validation --verbose
-```
-
-Available simulator tests include:
-- `basic_conversation` - Basic conversation flow with chat tool
-- `content_validation` - Content validation and duplicate detection
-- `per_tool_deduplication` - File deduplication for individual tools
-- `cross_tool_continuation` - Cross-tool conversation continuation scenarios
-- `cross_tool_comprehensive` - Comprehensive cross-tool file deduplication and continuation
-- `line_number_validation` - Line number handling validation across tools
-- `memory_validation` - Conversation memory validation
-- `model_thinking_config` - Model-specific thinking configuration behavior
-- `o3_model_selection` - O3 model selection and usage validation
-- `ollama_custom_url` - Ollama custom URL endpoint functionality
-- `openrouter_fallback` - OpenRouter fallback behavior when only provider
-- `openrouter_models` - OpenRouter model functionality and alias mapping
-- `token_allocation_validation` - Token allocation and conversation history validation
-- `testgen_validation` - TestGen tool validation with specific test function
-- `refactor_validation` - Refactor tool validation with codesmells
-- `conversation_chain_validation` - Conversation chain and threading validation
-- `consensus_stance` - Consensus tool validation with stance steering (for/against/neutral)
-
-**Note**: All simulator tests should be run individually for optimal testing and better error isolation.
-
-#### Run Unit Tests Only
-```bash
-# Run all unit tests (excluding integration tests that require API keys)
-python -m pytest tests/ -v -m "not integration"
-
-# Run specific test file
-python -m pytest tests/test_refactor.py -v
-
-# Run specific test function
-python -m pytest tests/test_refactor.py::TestRefactorTool::test_format_response -v
-
-# Run tests with coverage
-python -m pytest tests/ --cov=. --cov-report=html -m "not integration"
-```
-
-#### Run Integration Tests (Uses Free Local Models)
-
-**Setup Requirements:**
-```bash
-# 1. Install Ollama (if not already installed)
-# Visit https://ollama.ai or use brew install ollama
-
-# 2. Start Ollama service
-ollama serve
-
-# 3. Pull a model (e.g., llama3.2)
-ollama pull llama3.2
-
-# 4. Set environment variable for custom provider
-export CUSTOM_API_URL="http://localhost:11434"
-```
-
-**Run Integration Tests:**
-```bash
-# Run integration tests that make real API calls to local models
-python -m pytest tests/ -v -m "integration"
-
-# Run specific integration test
-python -m pytest tests/test_prompt_regression.py::TestPromptIntegration::test_chat_normal_prompt -v
-
-# Run all tests (unit + integration)
-python -m pytest tests/ -v
-```
-
-**Note**: Integration tests use the local-llama model via Ollama, which is completely FREE to run unlimited times. Requires `CUSTOM_API_URL` environment variable set to your local Ollama endpoint. They can be run safely in CI/CD but are excluded from code quality checks to keep them fast.
-
-### Development Workflow
-
-#### Before Making Changes
-1. Ensure virtual environment is activated: `source .pal_venv/bin/activate`
-2. Run quality checks: `./code_quality_checks.sh`
-3. Check logs to ensure server is healthy: `tail -n 50 logs/mcp_server.log`
-
-#### After Making Changes
-1. Run quality checks again: `./code_quality_checks.sh`
-2. Run integration tests locally: `./run_integration_tests.sh`
-3. Run quick test mode for fast validation: `python communication_simulator_test.py --quick`
-4. Run relevant specific simulator tests if needed: `python communication_simulator_test.py --individual <test_name>`
-5. Check logs for any issues: `tail -n 100 logs/mcp_server.log`
-6. Restart Claude session to use updated code
-
-#### Before Committing/PR
-1. Final quality check: `./code_quality_checks.sh`
-2. Run integration tests: `./run_integration_tests.sh`
-3. Run quick test mode: `python communication_simulator_test.py --quick`
-4. Run full simulator test suite (optional): `./run_integration_tests.sh --with-simulator`
-5. Verify all tests pass 100%
-
-### Common Troubleshooting
-
-#### Server Issues
-```bash
-# Check if Python environment is set up correctly
-./run-server.sh
-
-# View recent errors
-grep "ERROR" logs/mcp_server.log | tail -20
-
-# Check virtual environment
-which python
-# Should show: .../pal-mcp-server/.pal_venv/bin/python
-```
-
-#### Test Failures
-```bash
-# First try quick test mode to see if it's a general issue
-python communication_simulator_test.py --quick --verbose
-
-# Run individual failing test with verbose output
-python communication_simulator_test.py --individual <test_name> --verbose
-
-# Check server logs during test execution
-tail -f logs/mcp_server.log
-
-# Run tests with debug output
-LOG_LEVEL=DEBUG python communication_simulator_test.py --individual <test_name>
-```
-
-#### Linting Issues
-```bash
-# Auto-fix most linting issues
-ruff check . --fix
-black .
-isort .
-
-# Check what would be changed without applying
-ruff check .
-black --check .
-isort --check-only .
-```
-
-### File Structure Context
-
-- `./code_quality_checks.sh` - Comprehensive quality check script
-- `./run-server.sh` - Server setup and management
-- `communication_simulator_test.py` - End-to-end testing framework
-- `simulator_tests/` - Individual test modules
-- `tests/` - Unit test suite
-- `tools/` - MCP tool implementations
-- `providers/` - AI provider implementations
-- `systemprompts/` - System prompt definitions
-- `logs/` - Server log files
-
-### Environment Requirements
-
-- Python 3.9+ with virtual environment
-- All dependencies from `requirements.txt` installed
-- Proper API keys configured in `.env` file
-
-This guide provides everything needed to efficiently work with the PAL MCP Server codebase using Claude. Always run quality checks before and after making changes to ensure code integrity.
+- Documentation: https://github.com/ruvnet/claude-flow
+- Issues: https://github.com/ruvnet/claude-flow/issues

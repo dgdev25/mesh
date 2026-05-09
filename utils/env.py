@@ -1,8 +1,10 @@
-"""Centralized environment variable access for PAL MCP Server."""
+"""Centralized environment variable access for Mesh MCP Server."""
 
 from __future__ import annotations
 
+import logging
 import os
+import shutil
 from collections.abc import Mapping
 from contextlib import contextmanager
 from pathlib import Path
@@ -28,7 +30,7 @@ def _read_dotenv_values() -> dict[str, str | None]:
 
 
 def _compute_force_override(values: Mapping[str, str | None]) -> bool:
-    raw = (values.get("PAL_MCP_FORCE_ENV_OVERRIDE") or "false").strip().lower()
+    raw = (values.get("MESH_MCP_FORCE_ENV_OVERRIDE") or "false").strip().lower()
     return raw == "true"
 
 
@@ -58,13 +60,13 @@ reload_env()
 
 
 def env_override_enabled() -> bool:
-    """Return True when PAL_MCP_FORCE_ENV_OVERRIDE is enabled via the .env file."""
+    """Return True when MESH_MCP_FORCE_ENV_OVERRIDE is enabled via the .env file."""
 
     return _FORCE_ENV_OVERRIDE
 
 
 def get_env(key: str, default: str | None = None) -> str | None:
-    """Retrieve environment variables respecting PAL_MCP_FORCE_ENV_OVERRIDE."""
+    """Retrieve environment variables respecting MESH_MCP_FORCE_ENV_OVERRIDE."""
 
     if env_override_enabled():
         if key in _DOTENV_VALUES:
@@ -109,3 +111,56 @@ def suppress_env_vars(*names: str):
     finally:
         for name, value in removed.items():
             os.environ[name] = value
+
+
+def validate_cli_environment() -> dict[str, bool]:
+    """Validate CLI tools availability and log results.
+
+    Checks if CLI binaries are available in PATH:
+    - gemini: Gemini CLI (from GEMINI_CLI_PATH or "gemini")
+    - codex: OpenAI CLI (from CODEX_CLI_PATH or "codex")
+
+    Returns:
+        Dictionary mapping CLI name to availability (True = found, False = missing)
+    """
+    log = logging.getLogger(__name__)
+    cli_paths = {
+        "gemini": get_env("GEMINI_CLI_PATH", "gemini") or "gemini",
+        "codex": get_env("CODEX_CLI_PATH", "codex") or "codex",
+    }
+
+    results = {}
+    for cli_name, cli_path in cli_paths.items():
+        if shutil.which(cli_path):
+            results[cli_name] = True
+            log.info(f"✓ {cli_name} CLI found: {cli_path}")
+        else:
+            results[cli_name] = False
+            log.warning(f"✗ {cli_name} CLI not found at '{cli_path}', will use fallback")
+
+    return results
+
+
+def validate_provider_environment() -> dict[str, bool]:
+    """Validate provider availability (API keys, CLI tools, etc.).
+
+    Returns:
+        Dictionary mapping provider name to availability
+    """
+    log = logging.getLogger(__name__)
+    results = {}
+
+    # Check OpenRouter
+    openrouter_key = get_env("OPENROUTER_API_KEY")
+    if openrouter_key:
+        results["openrouter"] = True
+        log.info("✓ OpenRouter API key configured")
+    else:
+        results["openrouter"] = False
+        log.warning("✗ OpenRouter API key not set, will skip OpenRouter fallback")
+
+    # Check CLI tools
+    cli_results = validate_cli_environment()
+    results.update(cli_results)
+
+    return results

@@ -1,5 +1,6 @@
 """Shared data structures and helpers for model providers."""
 
+from .cli_output import CliError, CliNotFoundError, CliOutput, CliResponseParser, CliTimeoutError
 from .model_capabilities import ModelCapabilities
 from .model_response import ModelResponse
 from .provider_type import ProviderType
@@ -18,4 +19,9 @@ __all__ = [
     "FixedTemperatureConstraint",
     "RangeTemperatureConstraint",
     "DiscreteTemperatureConstraint",
+    "CliOutput",
+    "CliError",
+    "CliTimeoutError",
+    "CliNotFoundError",
+    "CliResponseParser",
 ]

@@ -2,7 +2,7 @@
 
 ## Quick Debugging Steps
 
-If you're experiencing issues with the PAL MCP Server, follow these steps:
+If you're experiencing issues with the Mesh MCP Server, follow these steps:
 
 ### 1. Check MCP Connection
 

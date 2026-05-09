@@ -1,6 +1,6 @@
-# Getting Started with PAL MCP Server
+# Getting Started with Mesh MCP Server
 
-This guide walks you through setting up the PAL MCP Server from scratch, including installation, configuration, and first usage.
+This guide walks you through setting up the Mesh MCP Server from scratch, including installation, configuration, and first usage.
 
 ## Prerequisites
 
@@ -77,7 +77,7 @@ Choose your AI coding assistant and add the corresponding configuration:
 ```json
 {
   "mcpServers": {
-    "pal": {
+    "mesh": {
       "command": "sh",
       "args": [
         "-c", 
@@ -98,7 +98,7 @@ Create `.mcp.json` in your project root:
 ```json
 {
   "mcpServers": {
-    "pal": {
+    "mesh": {
       "command": "sh", 
       "args": [
         "-c",
@@ -119,7 +119,7 @@ Edit `~/.gemini/settings.json`:
 ```json
 {
   "mcpServers": {
-    "pal": {
+    "mesh": {
       "command": "sh",
       "args": [
         "-c",
@@ -164,7 +164,7 @@ Create or edit `~/.qwen/settings.json`:
 ```json
 {
   "mcpServers": {
-    "pal": {
+    "mesh": {
       "command": "bash",
       "args": [
         "-c",
@@ -189,7 +189,7 @@ Edit `~/.config/opencode/opencode.json`:
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "pal": {
+    "mesh": {
       "type": "local",
       "command": [
         "/path/to/pal-mcp-server/.pal_venv/bin/python",
@@ -209,7 +209,7 @@ Add any other API keys you rely on (`OPENAI_API_KEY`, `OPENROUTER_API_KEY`, etc.
 
 #### IDE Clients (Cursor & VS Code)
 
-PAL works in GUI IDEs that speak MCP. The configuration mirrors the CLI examples above—point the client at the `uvx` launcher and set any required environment variables.
+Mesh works in GUI IDEs that speak MCP. The configuration mirrors the CLI examples above—point the client at the `uvx` launcher and set any required environment variables.
 
 **Cursor IDE**
 
@@ -305,7 +305,7 @@ CUSTOM_MODEL_NAME=llama3.2                   # Default model name
 
 ## Prevent Client Timeouts
 
-Some MCP clients default to short timeouts and can disconnect from PAL during long tool runs. Configure each client with a generous ceiling (we recommend at least five minutes); the PAL setup script now writes a 20-minute tool timeout for Codex so upstream providers contacted by the server have time to respond.
+Some MCP clients default to short timeouts and can disconnect from Mesh during long tool runs. Configure each client with a generous ceiling (we recommend at least five minutes); the Mesh setup script now writes a 20-minute tool timeout for Codex so upstream providers contacted by the server have time to respond.
 
 ### Claude Code & Claude Desktop
 
@@ -320,7 +320,7 @@ Claude reads MCP-related environment variables either from your shell or from `~
 }
 ```
 
-You can scope this block at the top level of `settings.json` (applies to every session) or under a specific `mcpServers.<name>.env` entry if you only want it for PAL (the server name may still be `pal` while configurations catch up). The values are in milliseconds. Note: Claude’s SSE transport still enforces an internal ceiling of roughly five minutes; long-running HTTP/SSE servers may need retries until Anthropic ships their fix.
+You can scope this block at the top level of `settings.json` (applies to every session) or under a specific `mcpServers.<name>.env` entry if you only want it for Mesh (the server name may still be `pal` while configurations catch up). The values are in milliseconds. Note: Claude’s SSE transport still enforces an internal ceiling of roughly five minutes; long-running HTTP/SSE servers may need retries until Anthropic ships their fix.
 
 ### Codex CLI
 
@@ -343,7 +343,7 @@ Gemini uses a single `timeout` field per server inside `~/.gemini/settings.json`
 ```json
 {
   "mcpServers": {
-    "pal": {
+    "mesh": {
       "command": "uvx",
       "args": ["pal-mcp-server"],
       "timeout": 300000
@@ -372,7 +372,7 @@ Versions 0.2.1 and newer currently ignore values above ~60 seconds for some tran
 3. Try: `"Use pal to chat about Python best practices"`
 
 ### For Gemini CLI:
-**Note**: While PAL MCP connects to Gemini CLI, tool invocation isn't working correctly yet. See [Gemini CLI Setup](gemini-setup.md) for updates.
+**Note**: While Mesh MCP connects to Gemini CLI, tool invocation isn't working correctly yet. See [Gemini CLI Setup](gemini-setup.md) for updates.
 
 ### For Qwen Code CLI:
 1. Restart the Qwen Code CLI if it's running (`qwen exit`).

@@ -1,7 +1,7 @@
 """
-Configuration and constants for PAL MCP Server
+Configuration and constants for Mesh MCP Server
 
-This module centralizes all configuration settings for the PAL MCP Server.
+This module centralizes all configuration settings for the Mesh MCP Server.
 It defines model configurations, token limits, temperature defaults, and other
 constants used throughout the application.
 
@@ -149,6 +149,26 @@ MCP_PROMPT_SIZE_LIMIT = _calculate_mcp_prompt_limit()
 # "de-DE", "it-IT", "pt-PT"
 # Leave empty for default language (English)
 LOCALE = get_env("LOCALE", "") or ""
+
+# CLI Paths and Timeouts
+# Configuration for CLI-based model providers (Gemini CLI, Codex CLI)
+# These tools allow executing models without SDK dependencies
+CLI_PATHS = {
+    "gemini": get_env("GEMINI_CLI_PATH", "gemini"),
+    "codex": get_env("CODEX_CLI_PATH", "codex"),
+}
+
+# Timeout for CLI commands in seconds
+# CLI operations that exceed this duration will be cancelled
+# and the fallback provider will be tried
+CLI_TIMEOUT_SECONDS = int(get_env("CLI_TIMEOUT_SECONDS", "30") or "30")
+
+# OpenRouter Configuration
+# OPENROUTER_API_KEY: Optional API key for OpenRouter fallback provider
+# When set, OpenRouter acts as the final fallback after CLI tools fail
+# Leave empty to disable OpenRouter as fallback
+OPENROUTER_API_KEY = get_env("OPENROUTER_API_KEY") or None
+OPENROUTER_ENABLED = bool(OPENROUTER_API_KEY)
 
 # Threading configuration
 # Simple in-memory conversation threading for stateless MCP environment
