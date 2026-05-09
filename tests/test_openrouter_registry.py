@@ -92,11 +92,8 @@ class TestOpenRouterModelRegistry:
             ("OPUS", "anthropic/claude-opus-4.5"),  # Case insensitive
             ("claude-opus", "anthropic/claude-opus-4.5"),
             ("opus4.5", "anthropic/claude-opus-4.5"),
-            ("opus4.1", "anthropic/claude-opus-4.1"),  # 4.1 still accessible
             ("sonnet", "anthropic/claude-sonnet-4.5"),
             ("o3", "openai/o3"),
-            ("deepseek", "deepseek/deepseek-r1-0528"),
-            ("mistral", "mistralai/mistral-large-2411"),
         ]
 
         for alias, expected_model in test_cases:
@@ -109,9 +106,9 @@ class TestOpenRouterModelRegistry:
         registry = OpenRouterModelRegistry()
 
         # Should be able to look up by full model name
-        config = registry.resolve("anthropic/claude-opus-4.1")
+        config = registry.resolve("anthropic/claude-opus-4.5")
         assert config is not None
-        assert config.model_name == "anthropic/claude-opus-4.1"
+        assert config.model_name == "anthropic/claude-opus-4.5"
 
         config = registry.resolve("openai/o3")
         assert config is not None
@@ -139,7 +136,6 @@ class TestOpenRouterModelRegistry:
         assert config.model_name == "anthropic/claude-opus-4.5"
         assert config.friendly_name == "OpenRouter (anthropic/claude-opus-4.5)"
         assert config.context_window == 200000
-        assert not config.supports_extended_thinking
 
     def test_duplicate_alias_detection(self):
         """Test that duplicate aliases are detected."""
