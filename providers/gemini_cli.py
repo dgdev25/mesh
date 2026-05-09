@@ -1,16 +1,21 @@
 """Gemini CLI-based model provider.
 
-This provider executes the ``gemini`` binary as a subprocess. It does not use
-a JSON capability registry — capabilities for the small handful of supported
-Gemini models are declared inline below.
+Shells out to the real ``gemini`` binary using ``-o json`` for structured output.
+
+Real CLI invocation:
+    gemini -p "<prompt>" -m <model> -o json
+
+Output structure:
+    {"session_id": "...", "response": "<text>", "stats": {"models": {...}}}
 """
 
+import json
 import logging
 from typing import ClassVar, Optional
 
 from .cli_base import CliProvider
 from .shared import ModelCapabilities, ModelResponse, ProviderType
-from .shared.cli_output import CliError, CliOutput, CliResponseParser
+from .shared.cli_output import CliError, CliOutput
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +29,7 @@ def _gemini_caps(name: str, friendly: str, score: int, ctx: int, out: int, alias
         context_window=ctx,
         max_output_tokens=out,
         aliases=aliases,
-        supports_streaming=False,  # CLI is request/response, no streaming
+        supports_streaming=False,
         supports_images=True,
         supports_extended_thinking=True,
         supports_function_calling=False,
@@ -64,7 +69,7 @@ class GeminiCliProvider(CliProvider):
 
     MODEL_CAPABILITIES: ClassVar[dict[str, ModelCapabilities]] = _GEMINI_MODELS
 
-    def __init__(self, cli_path: str = "gemini", timeout_s: int = 30, **kwargs):
+    def __init__(self, cli_path: str = "gemini", timeout_s: int = 120, **kwargs):
         kwargs["api_key"] = "cli"
         super().__init__(cli_path=cli_path, timeout_s=timeout_s, **kwargs)
 
@@ -83,44 +88,46 @@ class GeminiCliProvider(CliProvider):
         system_prompt: Optional[str] = None,
         **kwargs,
     ) -> list[str]:
-        args: list[str] = [self.cli_path, "generate"]
         full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
-        args.extend(["--prompt", full_prompt, "--model", model, "--temperature", str(temperature)])
-        if max_output_tokens:
-            args.extend(["--max-output-tokens", str(max_output_tokens)])
-        thinking_mode = kwargs.get("thinking_mode")
-        if thinking_mode:
-            args.extend(["--thinking-mode", thinking_mode])
-        logger.debug(f"Built Gemini CLI args: {args[0:3]} ... (prompt hidden)")
+        # gemini CLI: -p prompt, -m model, -o json (structured output).
+        # --temperature / --max-output-tokens are not exposed by the CLI; they
+        # are controlled via gemini config files, so we omit them silently.
+        args = [self.cli_path, "-p", full_prompt, "-m", model, "-o", "json"]
+        logger.debug("Built Gemini CLI args: %s ... (prompt hidden)", args[0:1] + ["-p", "<hidden>", "-m", model, "-o", "json"])
         return args
 
     def _parse_response(self, output: CliOutput) -> ModelResponse:
-        CliResponseParser.validate_output(output, expected_format="json")
+        """Parse `gemini -o json` output into a ModelResponse."""
         try:
-            data = CliResponseParser.parse_json(output.raw_output)
-        except CliError as e:
-            raise CliError(f"Failed to parse Gemini CLI response: {e}") from e
+            data = json.loads(output.raw_output)
+        except json.JSONDecodeError as exc:
+            raise CliError(f"Gemini CLI did not emit valid JSON: {exc}") from exc
 
-        content = data.get("content", "")
+        content = data.get("response", "")
         if not content:
-            raise CliError("Gemini CLI response missing 'content' field")
+            raise CliError("Gemini CLI response missing 'response' field")
 
-        usage_data = data.get("usage", {})
-        usage = {
-            "input_tokens": usage_data.get("input_tokens", 0),
-            "output_tokens": usage_data.get("output_tokens", 0),
-            "total_tokens": usage_data.get("total_tokens", 0),
+        # Extract token usage from stats.models (first/only model).
+        usage = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
+        models_stats = data.get("stats", {}).get("models", {})
+        if models_stats:
+            first_model_stats = next(iter(models_stats.values()))
+            tokens = first_model_stats.get("tokens", {})
+            usage["input_tokens"] = tokens.get("prompt", tokens.get("input", 0))
+            usage["output_tokens"] = tokens.get("candidates", 0)
+            usage["total_tokens"] = tokens.get("total", 0)
+
+        model_name = next(iter(models_stats.keys()), "gemini-unknown") if models_stats else "gemini-unknown"
+
+        metadata = {
+            "session_id": data.get("session_id"),
+            "stats": data.get("stats"),
         }
-
-        metadata = data.get("metadata", {})
-        metadata.setdefault("finish_reason", data.get("finish_reason", "STOP"))
-        metadata.setdefault("is_blocked_by_safety", data.get("is_blocked_by_safety", False))
-        metadata.setdefault("safety_feedback", data.get("safety_feedback"))
 
         return ModelResponse(
             content=content,
             usage=usage,
-            model_name=data.get("model", "gemini-unknown"),
+            model_name=model_name,
             friendly_name="Gemini (CLI)",
             provider=ProviderType.GEMINI_CLI,
             metadata=metadata,

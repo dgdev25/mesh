@@ -1,9 +1,8 @@
 """Unit tests for CLI-based providers and CLI output parsing."""
 
-import asyncio
 import json
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
 from providers.cli_base import CliProvider
 from providers.codex_cli import CodexCliProvider
@@ -16,7 +15,6 @@ from providers.shared.cli_output import (
     CliResponseParser,
     CliTimeoutError,
 )
-
 
 # ============================================================================
 # Module 1: CLI Output Parser Tests
@@ -453,118 +451,68 @@ class TestGeminiCliProvider:
         assert provider.get_provider_type() == ProviderType.GEMINI_CLI
 
     def test_build_args_basic(self):
-        """Test CLI argument building with basic parameters."""
+        """`gemini -p PROMPT -m MODEL -o json` is the real shape."""
         provider = GeminiCliProvider(cli_path="gemini")
-
-        args = provider._build_args(
-            prompt="Hello, world!",
-            model="gemini-2-flash",
-            temperature=0.7,
-        )
-
-        assert args[0] == "gemini"
-        assert args[1] == "generate"
-        assert "--prompt" in args
-        assert "Hello, world!" in args
-        assert "--model" in args
-        assert "gemini-2-flash" in args
-        assert "--temperature" in args
-        assert "0.7" in args
+        args = provider._build_args(prompt="Hello, world!", model="gemini-2.5-flash", temperature=0.7)
+        assert args == ["gemini", "-p", "Hello, world!", "-m", "gemini-2.5-flash", "-o", "json"]
 
     def test_build_args_with_system_prompt(self):
-        """Test CLI argument building with system prompt."""
+        """System prompt is concatenated into the -p prompt."""
         provider = GeminiCliProvider(cli_path="gemini")
-
         args = provider._build_args(
             prompt="User prompt",
-            model="gemini-2-flash",
+            model="gemini-2.5-flash",
             temperature=0.5,
             system_prompt="You are helpful.",
         )
+        prompt_index = args.index("-p") + 1
+        assert "You are helpful." in args[prompt_index]
+        assert "User prompt" in args[prompt_index]
 
-        # Combined prompt should include both system and user
-        combined = " ".join(args)
-        assert "You are helpful." in combined
-        assert "User prompt" in combined
-
-    def test_build_args_with_max_tokens(self):
-        """Test CLI argument building with max tokens."""
+    def test_build_args_max_tokens_and_thinking_mode_silently_ignored(self):
+        """The real Gemini CLI does not accept --max-output-tokens or --thinking-mode flags."""
         provider = GeminiCliProvider(cli_path="gemini")
-
         args = provider._build_args(
-            prompt="test",
-            model="gemini-2-flash",
+            prompt="t",
+            model="gemini-2.5-flash",
             temperature=0.7,
             max_output_tokens=1000,
-        )
-
-        assert "--max-output-tokens" in args
-        assert "1000" in args
-
-    def test_build_args_with_thinking_mode(self):
-        """Test CLI argument building with thinking mode."""
-        provider = GeminiCliProvider(cli_path="gemini")
-
-        args = provider._build_args(
-            prompt="test",
-            model="gemini-2-flash",
-            temperature=0.7,
             thinking_mode="high",
         )
-
-        assert "--thinking-mode" in args
-        assert "high" in args
+        # No --max-output-tokens / --thinking-mode in the real CLI's surface
+        assert "--max-output-tokens" not in args
+        assert "--thinking-mode" not in args
 
     def test_parse_response_success(self):
-        """Test parsing successful Gemini response."""
+        """Parse the real `gemini -o json` envelope: {session_id, response, stats}."""
         provider = GeminiCliProvider(cli_path="gemini")
-
-        json_output = json.dumps({
-            "content": "This is the response",
-            "usage": {
-                "input_tokens": 10,
-                "output_tokens": 20,
-                "total_tokens": 30,
+        gemini_json = json.dumps({
+            "session_id": "abc-123",
+            "response": "This is the response",
+            "stats": {
+                "models": {
+                    "gemini-2.5-flash": {
+                        "tokens": {"input": 10, "prompt": 850, "candidates": 20, "total": 30},
+                    }
+                },
             },
-            "model": "gemini-2-flash",
-            "finish_reason": "STOP",
-            "is_blocked_by_safety": False,
         })
-
-        output = CliOutput(
-            stdout=json_output,
-            stderr="",
-            exit_code=0,
-            command="test",
-            duration_ms=100.0,
-        )
-
+        output = CliOutput(stdout=gemini_json, stderr="", exit_code=0, command="test", duration_ms=100.0)
         response = provider._parse_response(output)
-
         assert response.content == "This is the response"
-        assert response.usage["input_tokens"] == 10
+        assert response.usage["input_tokens"] == 850
         assert response.usage["output_tokens"] == 20
-        assert response.model_name == "gemini-2-flash"
+        assert response.usage["total_tokens"] == 30
+        assert response.model_name == "gemini-2.5-flash"
         assert response.provider == ProviderType.GEMINI_CLI
         assert response.friendly_name == "Gemini (CLI)"
 
     def test_parse_response_missing_content(self):
-        """Test parsing Gemini response with missing content field."""
+        """A response with no `response` key must raise."""
         provider = GeminiCliProvider(cli_path="gemini")
-
-        json_output = json.dumps({
-            "usage": {"input_tokens": 10},
-        })
-
-        output = CliOutput(
-            stdout=json_output,
-            stderr="",
-            exit_code=0,
-            command="test",
-            duration_ms=100.0,
-        )
-
-        with pytest.raises(CliError, match="missing 'content'"):
+        gemini_json = json.dumps({"session_id": "x", "stats": {}})
+        output = CliOutput(stdout=gemini_json, stderr="", exit_code=0, command="test", duration_ms=100.0)
+        with pytest.raises(CliError, match="missing 'response'"):
             provider._parse_response(output)
 
     def test_parse_response_invalid_json(self):
@@ -597,190 +545,81 @@ class TestCodexCliProvider:
         assert provider.get_provider_type() == ProviderType.CODEX_CLI
 
     def test_build_args_basic(self):
-        """Test CLI argument building with basic parameters."""
+        """`codex exec --json --skip-git-repo-check -m MODEL PROMPT` is the real shape."""
         provider = CodexCliProvider(cli_path="codex")
-
-        args = provider._build_args(
-            prompt="Hello, world!",
-            model="gpt-4",
-            temperature=0.7,
-        )
-
-        assert args[0] == "codex"
-        assert args[1] == "chat-completion"
-        assert "--message" in args
-        assert "Hello, world!" in args
-        assert "--model" in args
-        assert "gpt-4" in args
-        assert "--temperature" in args
-        assert "0.7" in args
+        args = provider._build_args(prompt="Hello, world!", model="gpt-5.3-codex", temperature=0.7)
+        assert args == [
+            "codex", "exec", "--json", "--skip-git-repo-check",
+            "-m", "gpt-5.3-codex", "Hello, world!",
+        ]
 
     def test_build_args_with_system_prompt(self):
-        """Test CLI argument building with system prompt."""
+        """System prompt is concatenated into the positional prompt."""
         provider = CodexCliProvider(cli_path="codex")
-
         args = provider._build_args(
             prompt="User prompt",
-            model="gpt-4",
+            model="gpt-5.3-codex",
             temperature=0.5,
             system_prompt="You are helpful.",
         )
+        # Last arg is the prompt; check both system + user merged into it.
+        assert "You are helpful." in args[-1]
+        assert "User prompt" in args[-1]
 
-        # Combined message should include both system and user
-        combined = " ".join(args)
-        assert "You are helpful." in combined
-        assert "User prompt" in combined
-
-    def test_build_args_with_max_tokens(self):
-        """Test CLI argument building with max tokens."""
+    def test_build_args_unsupported_flags_silently_dropped(self):
+        """Real codex CLI doesn't honour --max-tokens / --top-p / penalty flags."""
         provider = CodexCliProvider(cli_path="codex")
-
         args = provider._build_args(
-            prompt="test",
-            model="gpt-4",
+            prompt="t",
+            model="gpt-5.3-codex",
             temperature=0.7,
             max_output_tokens=2000,
-        )
-
-        assert "--max-tokens" in args
-        assert "2000" in args
-
-    def test_build_args_with_top_p(self):
-        """Test CLI argument building with top_p."""
-        provider = CodexCliProvider(cli_path="codex")
-
-        args = provider._build_args(
-            prompt="test",
-            model="gpt-4",
-            temperature=0.7,
             top_p=0.9,
-        )
-
-        assert "--top-p" in args
-        assert "0.9" in args
-
-    def test_build_args_with_frequency_penalty(self):
-        """Test CLI argument building with frequency penalty."""
-        provider = CodexCliProvider(cli_path="codex")
-
-        args = provider._build_args(
-            prompt="test",
-            model="gpt-4",
-            temperature=0.7,
             frequency_penalty=0.5,
-        )
-
-        assert "--frequency-penalty" in args
-        assert "0.5" in args
-
-    def test_build_args_with_presence_penalty(self):
-        """Test CLI argument building with presence penalty."""
-        provider = CodexCliProvider(cli_path="codex")
-
-        args = provider._build_args(
-            prompt="test",
-            model="gpt-4",
-            temperature=0.7,
             presence_penalty=0.5,
         )
-
-        assert "--presence-penalty" in args
-        assert "0.5" in args
+        for flag in ("--max-tokens", "--top-p", "--frequency-penalty", "--presence-penalty"):
+            assert flag not in args, f"{flag} should not be passed to real codex CLI"
 
     def test_parse_response_success(self):
-        """Test parsing successful Codex response."""
+        """Parse the real `codex exec --json` JSONL stream."""
         provider = CodexCliProvider(cli_path="codex")
-
-        json_output = json.dumps({
-            "content": "This is the response",
-            "usage": {
-                "prompt_tokens": 10,
-                "completion_tokens": 20,
-                "total_tokens": 30,
-            },
-            "model": "gpt-4",
-            "finish_reason": "stop",
-        })
-
-        output = CliOutput(
-            stdout=json_output,
-            stderr="",
-            exit_code=0,
-            command="test",
-            duration_ms=100.0,
-        )
-
+        jsonl = "\n".join([
+            '{"type":"thread.started","thread_id":"abc"}',
+            '{"type":"turn.started"}',
+            '{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"This is the response"}}',
+            '{"type":"turn.completed","usage":{"input_tokens":100,"cached_input_tokens":40,"output_tokens":50,"reasoning_output_tokens":10}}',
+        ])
+        output = CliOutput(stdout=jsonl, stderr="", exit_code=0, command="test", duration_ms=100.0)
         response = provider._parse_response(output)
-
         assert response.content == "This is the response"
-        assert response.usage["input_tokens"] == 10
-        assert response.usage["output_tokens"] == 20
-        assert response.model_name == "gpt-4"
-        assert response.provider == ProviderType.CODEX_CLI
-        assert response.friendly_name == "OpenAI (CLI)"
-
-    def test_parse_response_missing_content(self):
-        """Test parsing Codex response with missing content field."""
-        provider = CodexCliProvider(cli_path="codex")
-
-        json_output = json.dumps({
-            "usage": {"prompt_tokens": 10},
-        })
-
-        output = CliOutput(
-            stdout=json_output,
-            stderr="",
-            exit_code=0,
-            command="test",
-            duration_ms=100.0,
-        )
-
-        with pytest.raises(CliError, match="missing 'content'"):
-            provider._parse_response(output)
-
-    def test_parse_response_invalid_json(self):
-        """Test parsing Codex response with invalid JSON."""
-        provider = CodexCliProvider(cli_path="codex")
-
-        output = CliOutput(
-            stdout="not json",
-            stderr="",
-            exit_code=0,
-            command="test",
-            duration_ms=100.0,
-        )
-
-        with pytest.raises(CliError):
-            provider._parse_response(output)
-
-    def test_parse_response_openai_token_names(self):
-        """Test that Codex parses OpenAI-style token counts."""
-        provider = CodexCliProvider(cli_path="codex")
-
-        json_output = json.dumps({
-            "content": "Response",
-            "usage": {
-                "prompt_tokens": 100,  # OpenAI style
-                "completion_tokens": 50,  # OpenAI style
-                "total_tokens": 150,
-            },
-            "model": "gpt-4",
-        })
-
-        output = CliOutput(
-            stdout=json_output,
-            stderr="",
-            exit_code=0,
-            command="test",
-            duration_ms=100.0,
-        )
-
-        response = provider._parse_response(output)
-
-        # Should be converted to standard names
         assert response.usage["input_tokens"] == 100
         assert response.usage["output_tokens"] == 50
-        assert response.usage["total_tokens"] == 150
+        assert response.usage["total_tokens"] == 160  # input + output + reasoning
+        assert response.model_name == "codex"
+        assert response.provider == ProviderType.CODEX_CLI
+        assert response.metadata["cached_input_tokens"] == 40
+        assert response.metadata["reasoning_output_tokens"] == 10
+
+    def test_parse_response_missing_agent_message(self):
+        """A stream with no agent_message must raise."""
+        provider = CodexCliProvider(cli_path="codex")
+        jsonl = '{"type":"turn.completed","usage":{"input_tokens":1,"output_tokens":0}}'
+        output = CliOutput(stdout=jsonl, stderr="", exit_code=0, command="test", duration_ms=100.0)
+        with pytest.raises(CliError, match="no agent_message"):
+            provider._parse_response(output)
+
+    def test_parse_response_ignores_non_json_lines(self):
+        """Real CLI sometimes emits non-JSON noise; parser must skip cleanly."""
+        provider = CodexCliProvider(cli_path="codex")
+        jsonl = "\n".join([
+            "Reading additional input from stdin...",
+            '{"type":"item.completed","item":{"type":"agent_message","text":"hello"}}',
+            '{"type":"turn.completed","usage":{"input_tokens":1,"output_tokens":1}}',
+        ])
+        output = CliOutput(stdout=jsonl, stderr="", exit_code=0, command="test", duration_ms=100.0)
+        response = provider._parse_response(output)
+        assert response.content == "hello"
 
 
 if __name__ == "__main__":

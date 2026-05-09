@@ -8,19 +8,18 @@ This module tests:
 5. Configuration loading and validation
 """
 
-import asyncio
 import logging
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
 from providers.registry import ModelProviderRegistry
+from providers.shared import ModelResponse
 from providers.shared.cli_output import (
     CliError,
     CliNotFoundError,
     CliTimeoutError,
 )
-from providers.shared import ModelResponse, ProviderType
 from utils.env import validate_cli_environment, validate_provider_environment
 
 

@@ -15,13 +15,10 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
-from providers.cli_base import CliProvider
 from providers.codex_cli import CodexCliProvider
 from providers.gemini_cli import GeminiCliProvider
 from providers.registry import ModelProviderRegistry
@@ -34,7 +31,6 @@ from providers.shared.cli_output import (
 )
 from utils.env import validate_cli_environment, validate_provider_environment
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -43,18 +39,24 @@ def _make_gemini_json(
     content: str = "Hello from Gemini",
     input_tokens: int = 10,
     output_tokens: int = 20,
-    model: str = "gemini-2-flash",
+    model: str = "gemini-2.5-flash",
 ) -> str:
+    """Build a stub of the real `gemini -o json` envelope."""
     return json.dumps({
-        "content": content,
-        "usage": {
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-            "total_tokens": input_tokens + output_tokens,
+        "session_id": "test-session",
+        "response": content,
+        "stats": {
+            "models": {
+                model: {
+                    "tokens": {
+                        "input": input_tokens,
+                        "prompt": input_tokens,
+                        "candidates": output_tokens,
+                        "total": input_tokens + output_tokens,
+                    }
+                }
+            }
         },
-        "model": model,
-        "finish_reason": "STOP",
-        "is_blocked_by_safety": False,
     })
 
 
@@ -62,18 +64,27 @@ def _make_codex_json(
     content: str = "Hello from Codex",
     prompt_tokens: int = 10,
     completion_tokens: int = 20,
-    model: str = "gpt-4",
+    model: str = "gpt-5.3-codex",  # noqa: ARG001 — kept for API compatibility
 ) -> str:
-    return json.dumps({
-        "content": content,
-        "usage": {
-            "prompt_tokens": prompt_tokens,
-            "completion_tokens": completion_tokens,
-            "total_tokens": prompt_tokens + completion_tokens,
-        },
-        "model": model,
-        "finish_reason": "stop",
-    })
+    """Build a stub of the real `codex exec --json` JSONL stream."""
+    events = [
+        '{"type":"thread.started","thread_id":"abc"}',
+        '{"type":"turn.started"}',
+        json.dumps({
+            "type": "item.completed",
+            "item": {"id": "item_0", "type": "agent_message", "text": content},
+        }),
+        json.dumps({
+            "type": "turn.completed",
+            "usage": {
+                "input_tokens": prompt_tokens,
+                "cached_input_tokens": 0,
+                "output_tokens": completion_tokens,
+                "reasoning_output_tokens": 0,
+            },
+        }),
+    ]
+    return "\n".join(events)
 
 
 def _cli_output(stdout: str, exit_code: int = 0, stderr: str = "") -> CliOutput:
@@ -158,49 +169,22 @@ class TestGeminiCliProviderIntegration:
         response = provider._parse_response(output)
         assert response.model_name == "gemini-3-pro"
 
-    def test_build_args_temperature_zero(self):
-        """should pass temperature=0.0 as string to CLI args."""
-        provider = GeminiCliProvider(cli_path="gemini")
-        args = provider._build_args(prompt="test", model="gemini-2-flash", temperature=0.0)
-        assert "--temperature" in args
-        idx = args.index("--temperature")
-        assert args[idx + 1] == "0.0"
-
-    def test_build_args_temperature_half(self):
-        """should pass temperature=0.5 as string to CLI args."""
-        provider = GeminiCliProvider(cli_path="gemini")
-        args = provider._build_args(prompt="test", model="gemini-2-flash", temperature=0.5)
-        assert "0.5" in args
-
-    def test_build_args_temperature_one(self):
-        """should pass temperature=1.0 as string to CLI args."""
-        provider = GeminiCliProvider(cli_path="gemini")
-        args = provider._build_args(prompt="test", model="gemini-2-flash", temperature=1.0)
-        assert "1.0" in args
-
-    def test_build_args_max_tokens_100(self):
-        """should emit --max-output-tokens when max_output_tokens=100."""
+    def test_build_args_real_cli_shape(self):
+        """Real `gemini` CLI doesn't expose --temperature or --max-output-tokens flags."""
         provider = GeminiCliProvider(cli_path="gemini")
         args = provider._build_args(
-            prompt="test", model="gemini-2-flash", temperature=0.7, max_output_tokens=100
+            prompt="test", model="gemini-2.5-flash", temperature=0.5, max_output_tokens=4096
         )
-        assert "--max-output-tokens" in args
-        assert "100" in args
-
-    def test_build_args_max_tokens_4096(self):
-        """should emit --max-output-tokens 4096 correctly."""
-        provider = GeminiCliProvider(cli_path="gemini")
-        args = provider._build_args(
-            prompt="test", model="gemini-2-flash", temperature=0.7, max_output_tokens=4096
-        )
-        idx = args.index("--max-output-tokens")
-        assert args[idx + 1] == "4096"
-
-    def test_build_args_omits_max_tokens_when_none(self):
-        """should not include --max-output-tokens when not provided."""
-        provider = GeminiCliProvider(cli_path="gemini")
-        args = provider._build_args(prompt="test", model="gemini-2-flash", temperature=0.7)
+        assert args == ["gemini", "-p", "test", "-m", "gemini-2.5-flash", "-o", "json"]
+        assert "--temperature" not in args
         assert "--max-output-tokens" not in args
+
+    def test_build_args_omits_unsupported_when_none(self):
+        """Should not include unsupported flags regardless of inputs."""
+        provider = GeminiCliProvider(cli_path="gemini")
+        args = provider._build_args(prompt="test", model="gemini-2.5-flash", temperature=0.7)
+        assert "--max-output-tokens" not in args
+        assert "--temperature" not in args
 
     def test_stderr_never_appears_in_response_content(self):
         """should never include CLI stderr in response.content."""
@@ -265,26 +249,18 @@ class TestCodexCliProviderIntegration:
         assert response.usage["output_tokens"] == 33
         assert response.usage["total_tokens"] == 110
 
-    def test_build_args_temperature_zero(self):
-        """should pass temperature=0.0 to CLI args."""
-        provider = CodexCliProvider(cli_path="codex")
-        args = provider._build_args(prompt="test", model="gpt-4", temperature=0.0)
-        assert "0.0" in args
-
-    def test_build_args_temperature_one(self):
-        """should pass temperature=1.0 to CLI args."""
-        provider = CodexCliProvider(cli_path="codex")
-        args = provider._build_args(prompt="test", model="gpt-4", temperature=1.0)
-        assert "1.0" in args
-
-    def test_build_args_max_tokens_1000(self):
-        """should emit --max-tokens 1000."""
+    def test_build_args_real_cli_shape(self):
+        """Real `codex` CLI doesn't expose --temperature or --max-tokens flags."""
         provider = CodexCliProvider(cli_path="codex")
         args = provider._build_args(
-            prompt="test", model="gpt-4", temperature=0.7, max_output_tokens=1000
+            prompt="test", model="gpt-5.3-codex", temperature=0.7, max_output_tokens=1000
         )
-        assert "--max-tokens" in args
-        assert "1000" in args
+        assert args == [
+            "codex", "exec", "--json", "--skip-git-repo-check",
+            "-m", "gpt-5.3-codex", "test",
+        ]
+        assert "--temperature" not in args
+        assert "--max-tokens" not in args
 
     def test_stderr_never_appears_in_response_content(self):
         """should never include CLI stderr in response.content."""
@@ -661,15 +637,18 @@ class TestEdgeCases:
     def test_empty_prompt_still_builds_valid_gemini_args(self):
         """should not crash when building Gemini args with an empty prompt."""
         provider = GeminiCliProvider(cli_path="gemini")
-        args = provider._build_args(prompt="", model="gemini-2-flash", temperature=0.7)
-        # The prompt arg is still included (even if empty)
-        assert "--prompt" in args
+        args = provider._build_args(prompt="", model="gemini-2.5-flash", temperature=0.7)
+        # Real CLI uses -p; the empty string is still passed positionally to it.
+        assert "-p" in args
+        assert args[args.index("-p") + 1] == ""
 
     def test_empty_prompt_still_builds_valid_codex_args(self):
         """should not crash when building Codex args with an empty prompt."""
         provider = CodexCliProvider(cli_path="codex")
-        args = provider._build_args(prompt="", model="gpt-4", temperature=0.7)
-        assert "--message" in args
+        args = provider._build_args(prompt="", model="gpt-5.3-codex", temperature=0.7)
+        # Real CLI uses positional PROMPT (last arg).
+        assert args[-1] == ""
+        assert "exec" in args
 
     def test_very_long_prompt_preserved_in_gemini_args(self):
         """should preserve a 12KB prompt string in Gemini CLI args."""
@@ -752,19 +731,19 @@ class TestEdgeCases:
             provider._parse_response(output)
 
     def test_gemini_json_missing_content_field_raises_cli_error(self):
-        """should raise CliError when JSON lacks 'content' field."""
+        """should raise CliError when JSON lacks 'response' field (real CLI key)."""
         provider = GeminiCliProvider(cli_path="gemini")
-        payload = json.dumps({"usage": {"input_tokens": 5}, "model": "gemini-2-flash"})
+        payload = json.dumps({"session_id": "x", "stats": {}})
         output = _cli_output(payload)
-        with pytest.raises(CliError, match="missing 'content'"):
+        with pytest.raises(CliError, match="missing 'response'"):
             provider._parse_response(output)
 
     def test_codex_json_missing_content_field_raises_cli_error(self):
-        """should raise CliError when JSON lacks 'content' field."""
+        """should raise CliError when stream emits no agent_message events."""
         provider = CodexCliProvider(cli_path="codex")
-        payload = json.dumps({"usage": {"prompt_tokens": 5}, "model": "gpt-4"})
+        payload = '{"type":"turn.completed","usage":{"input_tokens":1,"output_tokens":0}}'
         output = _cli_output(payload)
-        with pytest.raises(CliError, match="missing 'content'"):
+        with pytest.raises(CliError, match="no agent_message"):
             provider._parse_response(output)
 
     @pytest.mark.asyncio
@@ -800,7 +779,8 @@ class TestEdgeCases:
         provider = GeminiCliProvider(cli_path="gemini")
 
         async def mocked_run(args):
-            idx = args[args.index("--prompt") + 1]
+            # Real CLI uses -p PROMPT; index uses the value following -p.
+            idx = args[args.index("-p") + 1]
             return _cli_output(_make_gemini_json(content=f"answer_{idx}"))
 
         with patch.object(provider, "_run_cli", side_effect=mocked_run), \
