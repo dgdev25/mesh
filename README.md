@@ -169,7 +169,8 @@ python -m simulator_tests --quick                          # end-to-end MCP scen
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Apache License 2.0 — see [LICENSE](LICENSE) for the full text and
+[NOTICE](NOTICE) for upstream attribution.
 
 ## Acknowledgments
 

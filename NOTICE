@@ -1,39 +1,30 @@
 Mesh MCP Server
 Copyright (c) 2026 Lyle de Groot (dgdev25)
 
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
 This product is a derivative work of:
 
     PAL MCP Server
     Copyright (c) 2025 BeehiveInnovations
     https://github.com/BeehiveInnovations/pal-mcp-server
-    Originally licensed under the Apache License, Version 2.0
+    Licensed under the Apache License, Version 2.0
 
-The original PAL MCP Server is the copyright of its respective authors and
-contributors, listed in the upstream repository's commit history. This fork
-retains gratitude to that work.
-
-LICENSING
----------
-
-Mesh is distributed under the MIT License (see LICENSE). Per Apache 2.0
-Section 4, the following modifications have been made relative to the
-upstream code:
+Modifications relative to the upstream code (Apache 2.0 §4):
 
   1. Removed six direct API providers (Gemini, OpenAI, Azure, X.AI, DIAL,
      Custom) and the corresponding catalogue JSONs, environment variables,
-     and tests.
+     and tests. Mesh routes only through the `gemini` CLI, the `codex` CLI,
+     and OpenRouter.
   2. Renamed the project from "pal" / "PAL MCP Server" to "Mesh MCP Server".
   3. Rewrote the CLI provider implementations (providers/gemini_cli.py and
      providers/codex_cli.py) to invoke the real `gemini -p ... -o json` and
-     `codex exec --json` shapes (the upstream invented schemas did not match
-     the actual CLI binaries).
-  4. Replaced ~12,000 lines of provider code, marketing copy, and dead
-     scripts with a focused CLI-first implementation.
-  5. Reset the licence to MIT for simpler downstream consumption. Inherited
-     code is small enough that this is intended as relicensing of the
-     derivative work, not the upstream itself; the upstream's Apache 2.0
-     terms remain in force for anyone using the upstream directly.
+     `codex exec --json` shapes — the upstream invented schemas did not
+     match the actual CLI binaries.
+  4. Removed Docker tooling, PowerShell duplicates, and the
+     `code_quality_checks.sh` / `.pre-commit-config.yaml` developer scripts.
+  5. Bumped minimum Python from 3.10 to 3.11 and modernised typing syntax
+     across the codebase.
 
-Anyone redistributing or modifying Mesh should consult both this NOTICE
-file and the upstream repository to ensure attribution to original
-authors is preserved as required by good-faith open-source practice.
+The upstream PAL MCP Server is the copyright of its respective authors and
+contributors, listed in the upstream repository's commit history.
