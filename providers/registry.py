@@ -383,7 +383,7 @@ class ModelProviderRegistry:
 
         # Ultimate fallback if no providers have models
         logging.warning("No models available from any provider, using default fallback")
-        return "google/gemini-2.5-pro"
+        return "google/gemini-3-pro-preview"
 
     @classmethod
     def get_available_providers_with_keys(cls) -> list[ProviderType]:
