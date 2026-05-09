@@ -2,7 +2,7 @@
 name = "mesh"
 version = "9.8.2"
 description = "CLI-first MCP server: routes AI requests through gemini and codex CLIs with OpenRouter fallback"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "mcp>=1.0.0",
     "google-genai>=1.19.0",
@@ -45,7 +45,7 @@ markers = [
 
 [tool.black]
 line-length = 120
-target-version = ['py39', 'py310', 'py311', 'py312', 'py313']
+target-version = ['py311', 'py312', 'py313']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -76,7 +76,7 @@ line_length = 120
 skip_glob = ["venv/*", ".venv/*", ".mesh_venv/*"]
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py311"
 line-length = 120
 
 [tool.ruff.lint]

@@ -111,15 +111,7 @@ class TestUvxProjectConfiguration:
 
     def test_pyproject_toml_has_required_uvx_fields(self):
         """Test that pyproject.toml has all required fields for uvx support."""
-        try:
-            import tomllib
-        except ImportError:
-            # tomllib is only available in Python 3.11+
-            # For older versions, use tomli or skip the test
-            try:
-                import tomli as tomllib
-            except ImportError:
-                pytest.skip("tomllib/tomli not available for TOML parsing")
+        import tomllib  # stdlib since Python 3.11
 
         pyproject_path = Path(__file__).parent.parent / "pyproject.toml"
         assert pyproject_path.exists(), "pyproject.toml should exist"
@@ -147,16 +139,8 @@ class TestUvxProjectConfiguration:
 
     def test_pyproject_dependencies_match_requirements(self):
         """Test that pyproject.toml dependencies align with requirements.txt."""
-        try:
-            import tomllib
-        except ImportError:
-            # tomllib is only available in Python 3.11+
-            try:
-                import tomli as tomllib
-            except ImportError:
-                pytest.skip("tomllib/tomli not available for TOML parsing")
+        import tomllib  # stdlib since Python 3.11
 
-        # Read pyproject.toml
         pyproject_path = Path(__file__).parent.parent / "pyproject.toml"
         with open(pyproject_path, "rb") as f:
             pyproject_data = tomllib.load(f)

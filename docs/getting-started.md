@@ -15,7 +15,7 @@ You need at least one of those three to be available.
 
 ## Prerequisites
 
-- **Python 3.10+** (3.12 recommended)
+- **Python 3.11+** (3.12 or 3.13 recommended)
 - **Git**
 - **[uv](https://docs.astral.sh/uv/getting-started/installation/)** (optional, for the uvx install path)
 - **Windows users:** WSL2 is required for Claude Code

@@ -14,7 +14,7 @@ Each line of stdout is a JSON event. We collect:
 
 import json
 import logging
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from .cli_base import CliProvider
 from .shared import ModelCapabilities, ModelResponse, ProviderType
@@ -89,8 +89,8 @@ class CodexCliProvider(CliProvider):
         prompt: str,
         model: str,
         temperature: float = 0.7,
-        max_output_tokens: Optional[int] = None,
-        system_prompt: Optional[str] = None,
+        max_output_tokens: int | None = None,
+        system_prompt: str | None = None,
         **kwargs,
     ) -> list[str]:
         full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
@@ -172,9 +172,9 @@ class CodexCliProvider(CliProvider):
         self,
         prompt: str,
         model_name: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         temperature: float = 0.3,
-        max_output_tokens: Optional[int] = None,
+        max_output_tokens: int | None = None,
         **kwargs,
     ) -> ModelResponse:
         self.validate_parameters(model_name, temperature)

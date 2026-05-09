@@ -2,7 +2,7 @@
 # Mesh MCP Server — one-shot setup
 #
 # Sets up everything needed to run Mesh:
-#   1. Verify Python 3.10+
+#   1. Verify Python 3.11+
 #   2. Create .mesh_venv virtual environment
 #   3. Install Python dependencies
 #   4. Bootstrap .env from .env.example (you must fill in OPENROUTER_API_KEY)
@@ -23,7 +23,7 @@ cd "$SCRIPT_DIR"
 
 VENV_DIR=".mesh_venv"
 PY_MIN_MAJOR=3
-PY_MIN_MINOR=10
+PY_MIN_MINOR=11
 
 # --- args -----------------------------------------------------------
 CHECK_ONLY=false

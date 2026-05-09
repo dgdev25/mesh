@@ -78,18 +78,18 @@ class CliProvider(ModelProvider):
                     process.communicate(),
                     timeout=self.timeout_s,
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 # Terminate process on timeout
                 process.terminate()
                 try:
                     await asyncio.wait_for(process.wait(), timeout=5.0)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     # Force kill if termination hangs
                     logger.warning(f"CLI command did not terminate gracefully, killing: {command_str}")
                     process.kill()
                     try:
                         await asyncio.wait_for(process.wait(), timeout=2.0)
-                    except asyncio.TimeoutError:
+                    except TimeoutError:
                         logger.error(f"Failed to kill CLI process: {command_str}")
 
                 duration_ms = (time.time() - start_time) * 1000

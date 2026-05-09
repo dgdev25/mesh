@@ -22,7 +22,7 @@ Mesh routes every AI request through local command-line tools (`gemini`, `codex`
 
 ## Quick Start
 
-**Prerequisites:** Python 3.10+, Git. At least one of:
+**Prerequisites:** Python 3.11+, Git. At least one of:
 - **[Gemini CLI](https://github.com/google-gemini/gemini-cli)** — `npm i -g @google/gemini-cli && gemini login`
 - **[Codex CLI](https://github.com/openai/codex)** — `npm i -g @openai/codex && codex login`
 - **[OpenRouter](https://openrouter.ai/)** API key (set as `OPENROUTER_API_KEY` in `.env`)
