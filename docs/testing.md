@@ -117,11 +117,8 @@ Test isolated components and functions:
 
 ### HTTP Recording/Replay Tests (HTTP Transport Recorder)
 Tests for expensive API calls (like o3-pro) use custom recording/replay:
-- **Real API validation**: Tests against actual provider responses
-- **Cost efficiency**: Record once, replay forever
-- **Provider compatibility**: Validates fixes against real APIs
-- Uses HTTP Transport Recorder for httpx-based API calls
-- See [HTTP Recording/Replay Testing Guide](./vcr-testing.md) for details
+- **Real CLI invocation**: `tests/test_cli_integration.py` shells out to actual `gemini` and `codex` binaries (gated behind `MESH_RUN_CLI_TESTS=1` so CI can skip them)
+- **Mocked subprocess paths**: `tests/test_providers_cli.py` validates `_build_args` and `_parse_response` logic without running real CLIs
 
 ### Simulator Tests
 Validate real-world usage scenarios by simulating actual Claude prompts:

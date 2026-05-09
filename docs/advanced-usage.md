@@ -52,8 +52,7 @@ Regardless of your default configuration, you can specify models per request:
 | **`llama`** (Llama 3.2) | Custom/Local | 128K tokens | Local inference, privacy | On-device analysis, cost-free processing |
 | **Any model** | OpenRouter | Varies | Access to GPT-4, Claude, Llama, etc. | User-specified or based on task requirements |
 
-**Mix & Match Providers:** Use multiple providers simultaneously! Set both `OPENROUTER_API_KEY` and `CUSTOM_API_URL` to access 
-cloud models (expensive/powerful) AND local models (free/private) in the same conversation.
+**Mix & Match Backends:** Run with `gemini` and `codex` CLIs installed plus `OPENROUTER_API_KEY` set, and Mesh routes each model to the cheapest path that supports it (CLI first, OpenRouter for everything else).
 
 **Model Capabilities:**
 - **Gemini Models**: Support thinking modes (minimal to max), web search, 1M context
@@ -81,23 +80,20 @@ cloud models (expensive/powerful) AND local models (free/private) in the same co
 
 **Cost Control Examples:**
 ```env
-# Development: Allow experimentation
-GOOGLE_ALLOWED_MODELS=flash,pro
-OPENAI_ALLOWED_MODELS=o4-mini,o3-mini
+# Development: allow flagship models
+OPENROUTER_ALLOWED_MODELS=opus,sonnet,gemini-2.5-pro,gpt-5.2
 
-# Production: Cost-optimized  
-GOOGLE_ALLOWED_MODELS=flash
-OPENAI_ALLOWED_MODELS=o4-mini
+# Production: cost-optimized
+OPENROUTER_ALLOWED_MODELS=flash,gpt-5-mini,sonnet
 
-# High-performance: Quality over cost
-GOOGLE_ALLOWED_MODELS=pro
-OPENAI_ALLOWED_MODELS=o3,o4-mini
+# High-performance: quality over cost
+OPENROUTER_ALLOWED_MODELS=opus,gpt-5.2,gemini-2.5-pro
 ```
 
 **Important Notes:**
 - Restrictions apply to all usage including auto mode
 - `OPENROUTER_ALLOWED_MODELS` only affects models defined in `conf/openrouter_models.json`
-- Custom local models (from `conf/custom_models.json`) are not affected by OpenRouter restrictions
+- CLI-routed models (gemini-*, gpt-*) are not affected by OpenRouter restrictions; control those by uninstalling the CLI you don't want
 
 ## Thinking Modes
 

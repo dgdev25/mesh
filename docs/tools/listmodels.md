@@ -72,13 +72,12 @@ The tool displays:
 
 ## Configuration Dependencies
 
-The available models depend on your configuration:
+The available models depend on which backends are configured:
 
-**API Keys Required:**
-- `GEMINI_API_KEY` - Enables Gemini Pro and Flash models
-- `OPENAI_API_KEY` - Enables OpenAI O3, O4-mini, and GPT models
-- `OPENROUTER_API_KEY` - Enables access to multiple providers through OpenRouter
-- `CUSTOM_API_URL` - Enables local/custom models (Ollama, vLLM, etc.)
+**Backends:**
+- `gemini` CLI on PATH — Gemini Pro and Flash models
+- `codex` CLI on PATH — GPT-5 / o3 / o4 family
+- `OPENROUTER_API_KEY` in `.env` — fallback to any OpenRouter model
 
 **Model Restrictions:**
 If you've set model usage restrictions via environment variables, the tool will show:

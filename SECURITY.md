@@ -72,7 +72,7 @@ We practice coordinated disclosure. Please allow reasonable time to address issu
 
 1. **Protect API Keys**: Store keys in `.env` files (gitignored) or environment variables
 2. **Review AI Actions**: Always review AI-suggested code changes before applying
-3. **Use Local Models**: For sensitive codebases, consider using Ollama with local models
+3. **Prefer Local CLIs**: For sensitive codebases, install the `gemini` and/or `codex` CLIs locally so prompts never leave your machine via the OpenRouter HTTP fallback
 4. **Network Security**: When self-hosting, ensure appropriate network controls
 5. **Keep Updated**: Regularly update to the latest version for security fixes
 

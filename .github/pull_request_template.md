@@ -21,16 +21,6 @@ For breaking changes, use any commit type above with `BREAKING CHANGE:` in the c
 - `style: <description>` - Code style/formatting changes
 - `test: <description>` - Test additions/changes
 
-### Docker Build Triggering:
-
-Docker builds are **independent** of versioning and trigger based on:
-
-**Automatic**: When PRs modify relevant files:
-- Python files (`*.py`), `requirements*.txt`, `pyproject.toml`
-- Docker files (`Dockerfile`, `docker-compose.yml`, `.dockerignore`)
-
-**Manual**: Add the `docker-build` label to force builds for any PR.
-
 ## Description
 
 Please provide a clear and concise description of what this PR does.
