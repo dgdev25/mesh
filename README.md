@@ -1,26 +1,32 @@
-# Mesh MCP — CLI-First MCP Server
+# Mesh MCP
 
-<div align="center">
+**Let your AI assistant consult other AI models for code review, debugging, planning, and consensus — without leaving its session.**
 
-  <em>Local CLI tools meet the MCP protocol</em><br />
-  <sub>Routes AI requests through the Gemini and Codex CLIs, with OpenRouter as an HTTPS fallback</sub>
+Mesh is an MCP server for Claude Code, Codex CLI, and Gemini CLI. Plug it in and your assistant gains tools to call Gemini, GPT-5, Claude Opus, and 30+ other models for second opinions, structured workflows, and multi-model debate.
 
-</div>
+A typical session looks like:
+
+```
+You:    "Codereview with gemini pro on the auth/ module, then continue
+         with o3 for a second pass, then planner to outline fixes."
+Claude: → calls mesh codereview (gemini pro), gathers findings
+        → continues with o3 for cross-check
+        → calls mesh planner to produce a fix strategy
+        ← surfaces a unified report with both perspectives
+```
+
+Mesh routes every model call through the local `gemini` or `codex` CLI when it can, and falls back to OpenRouter for anything else.
 
 > Forked from **[BeehiveInnovations/pal-mcp-server](https://github.com/BeehiveInnovations/pal-mcp-server)**.
 > Mesh strips the original's six direct API providers (Gemini/OpenAI/Azure/X.AI/DIAL/Custom)
-> and routes everything through local CLIs + OpenRouter instead. See `NOTICE` for full attribution.
+> and routes everything through local CLIs + OpenRouter instead. See [NOTICE](NOTICE) for full attribution.
 
-**No accumulated API keys. No cloud lock-in. Just CLIs.**
-
-Mesh routes every AI request through local command-line tools (`gemini`, `codex`) when possible, falling back to OpenRouter only when nothing local can serve the model. Same MCP tools, same `ModelResponse` format, same workflows — just a leaner provider layer.
-
-**Features:**
-- 🚀 **Fast** — local CLI execution (100–500 ms typical)
-- 🔒 **Private** — no external API calls when CLIs handle the request
-- 📦 **Simple** — install one or both CLIs and point Mesh at them
-- 🔄 **Resilient** — automatic fallback Gemini → Codex → OpenRouter
-- 🧰 **Complete** — 18 Mesh tools work identically to the original layer
+**Why use Mesh:**
+- 🧠 **Multi-model workflows** — codereview, debug, planner, consensus, secaudit, and 13 more tools
+- 🔒 **Local-first** — no external API call when your `gemini` or `codex` CLI can serve the request
+- 🔄 **Resilient** — automatic fallback Gemini CLI → Codex CLI → OpenRouter
+- 📦 **One install** — `./setup.sh` configures everything; no per-provider API key juggling
+- 🪶 **Lean** — three backends total, no accumulated provider sprawl
 
 ---
 
