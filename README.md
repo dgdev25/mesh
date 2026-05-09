@@ -25,21 +25,20 @@ Mesh routes all AI requests through local command-line tools (Gemini CLI, Codex 
 ## Quick Start
 
 ```bash
-# 1. Install Mesh
-git clone <mesh-repo> && cd mesh && pip install -r requirements.txt
-
-# 2. Install CLIs (or set OPENROUTER_API_KEY for fallback)
-brew install gemini-cli  # or download from google-gemini/gemini-cli
-pip install openai[cli]  # for Codex CLI
-
-# 3. Start server
-python3 server.py
-
-# 4. Connect Claude (or other MCP client)
-claude mcp add mesh -- python3 /path/to/mesh/server.py
+git clone https://github.com/dgdev25/mesh.git
+cd mesh
+./setup.sh
 ```
 
-**That's it.** Mesh now routes all your AI requests through local CLIs with automatic fallback.
+`setup.sh` is idempotent and handles everything:
+1. Verifies Python 3.10+
+2. Creates `.mesh_venv` and installs deps
+3. Bootstraps `.env` from `.env.example`
+4. Detects `gemini` / `codex` CLIs on PATH
+5. Imports `server.py` to confirm it works
+6. Registers `mesh` with Claude Code via `claude mcp add`
+
+The only thing you provide manually is `OPENROUTER_API_KEY` in `.env` (or skip it if you have at least one CLI installed). Run `./setup.sh --check` any time to verify the install.
 
 ---
 
@@ -266,7 +265,7 @@ For best results when using [Codex CLI](https://developers.openai.com/codex/cli)
 ```bash
 git clone https://github.com/dgdev25/mesh.git
 cd mesh
-./run-server.sh        # creates .mesh_venv, installs deps, prints client config
+./setup.sh             # idempotent: venv, deps, .env, Claude Code registration
 ```
 
 **3. Start using:**

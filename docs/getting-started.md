@@ -57,13 +57,15 @@ It is the only HTTP-based provider Mesh supports.
 
 ## Step 2 — Install Mesh
 
-### Option A: Clone + run-server.sh (recommended)
+### Option A: Clone + setup.sh (recommended)
 
 ```bash
 git clone https://github.com/dgdev25/mesh.git
 cd mesh
-./run-server.sh        # creates .mesh_venv, installs deps, prints config
+./setup.sh             # idempotent: venv, deps, .env, Claude Code registration
 ```
+
+Re-run `./setup.sh --check` any time to verify the install.
 
 ### Option B: uvx one-shot
 
