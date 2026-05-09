@@ -129,19 +129,22 @@ Full reference: **[docs/configuration.md](docs/configuration.md)**.
 
 ## Example Workflows
 
-**Multi-model code review:**
+**Multi-model code review** *(codereview takes one model per pass — chain via continuation):*
 ```
-"Perform a codereview using gemini pro and o3, then use planner to create a fix strategy"
-```
-
-**Collaborative debugging:**
-```
-"Debug this race condition with max thinking mode, then validate the fix with precommit"
+"Run codereview with gemini pro on the auth/ directory, then continue with o3
+ for a second opinion, then use planner to outline a fix strategy"
 ```
 
-**Architecture planning:**
+**Collaborative debugging** *(thinking_mode only applies to thinking-capable models — name one):*
 ```
-"Plan our microservices migration, get consensus from pro and o3 on the approach"
+"Use debug with gemini pro and thinking_mode=max on this race condition,
+ then validate the fix with precommit"
+```
+
+**Architecture planning** *(consensus takes multiple models with stances):*
+```
+"Use planner to break down our microservices migration, then run consensus
+ with sonnet supporting the proposal and o3 opposing it"
 ```
 
 See **[docs/advanced-usage.md](docs/advanced-usage.md)** for more.
