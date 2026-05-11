@@ -33,12 +33,10 @@ class OpenRouterProvider(OpenAICompatibleProvider):
 
     FRIENDLY_NAME = "OpenRouter"
 
-    # Custom headers required by OpenRouter
-    DEFAULT_HEADERS = {
-        "HTTP-Referer": get_env("OPENROUTER_REFERER", "https://github.com/dgdev25/mesh")
-        or "https://github.com/dgdev25/mesh",
-        "X-Title": get_env("OPENROUTER_TITLE", "Mesh MCP Server") or "Mesh MCP Server",
-    }
+    # Custom headers required by OpenRouter. Resolved in __init__ so that
+    # reload_env()-triggered changes to OPENROUTER_REFERER / OPENROUTER_TITLE
+    # are honored instead of being frozen at class-definition time.
+    DEFAULT_HEADERS: dict[str, str] = {}
 
     # Model registry for managing configurations and aliases
     _registry: OpenRouterModelRegistry | None = None
@@ -52,6 +50,11 @@ class OpenRouterProvider(OpenAICompatibleProvider):
         """
         base_url = "https://openrouter.ai/api/v1"
         self._alias_cache: dict[str, str] = {}
+        self.DEFAULT_HEADERS = {
+            "HTTP-Referer": get_env("OPENROUTER_REFERER", "https://github.com/dgdev25/mesh")
+            or "https://github.com/dgdev25/mesh",
+            "X-Title": get_env("OPENROUTER_TITLE", "Mesh MCP Server") or "Mesh MCP Server",
+        }
         super().__init__(api_key, base_url=base_url, **kwargs)
 
         # Initialize model registry

@@ -148,30 +148,30 @@ def is_home_directory_root(path: Path) -> bool:
             )
             return True
 
-        # Also check common home directory patterns
-        path_str = str(resolved_path).lower()
-        home_patterns = [
+        # Also check common home directory roots. Anchor the prefix at the start of
+        # the resolved path so a legitimate working dir that merely *contains*
+        # "/users/" or "/home/" as a substring (e.g. /var/users/data) is not denied.
+        path_str = str(resolved_path)
+        path_lower = path_str.lower()
+        home_prefixes = [
             "/users/",  # macOS
             "/home/",  # Linux
             "c:\\users\\",  # Windows
             "c:/users/",  # Windows with forward slashes
         ]
 
-        for pattern in home_patterns:
-            if pattern in path_str:
-                # Extract the user directory path
-                # e.g., /Users/fahad or /home/username
-                parts = path_str.split(pattern)
-                if len(parts) > 1:
-                    # Get the part after the pattern
-                    after_pattern = parts[1]
-                    # Check if we're at the user's root (no subdirectories)
-                    if "/" not in after_pattern and "\\" not in after_pattern:
-                        logger.warning(
-                            f"Attempted to scan user home directory root: {path}. "
-                            f"Please specify a subdirectory instead."
-                        )
-                        return True
+        for prefix in home_prefixes:
+            if not path_lower.startswith(prefix):
+                continue
+            # Inspect the segment immediately after the prefix; only flag when the
+            # resolved path is exactly "<prefix><single_segment>" (the user root).
+            after_prefix = path_str[len(prefix):]
+            if "/" not in after_prefix and "\\" not in after_prefix and after_prefix:
+                logger.warning(
+                    f"Attempted to scan user home directory root: {path}. "
+                    f"Please specify a subdirectory instead."
+                )
+                return True
 
     except Exception as e:
         logger.debug(f"Error checking if path is home directory: {e}")

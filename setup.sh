@@ -109,9 +109,12 @@ if [[ -f .env ]]; then
 else
     if $CHECK_ONLY; then
         warn ".env missing (would copy from .env.example)"
-    else
+    elif [[ -f .env.example ]]; then
         cp .env.example .env
         ok "Created .env from .env.example"
+    else
+        warn ".env.example missing — skipping .env bootstrap"
+        warn "Create a .env manually if you need OPENROUTER_API_KEY or other settings"
     fi
 fi
 

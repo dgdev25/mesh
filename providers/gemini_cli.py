@@ -37,13 +37,41 @@ def _gemini_caps(name: str, friendly: str, score: int, ctx: int, out: int, alias
 
 
 _GEMINI_MODELS: dict[str, ModelCapabilities] = {
+    "gemini-3-pro-preview": _gemini_caps(
+        "gemini-3-pro-preview",
+        "Gemini 3 Pro Preview (CLI)",
+        score=19,
+        ctx=1_048_576,
+        out=65_536,
+        aliases=[
+            "pro",
+            "gemini-pro",
+            "gemini",
+            "gemini3",
+            "gemini-3",
+            "google/gemini-3-pro-preview",
+        ],
+    ),
+    "gemini-3-flash-preview": _gemini_caps(
+        "gemini-3-flash-preview",
+        "Gemini 3 Flash Preview (CLI)",
+        score=15,
+        ctx=1_048_576,
+        out=65_536,
+        aliases=[
+            "flash3",
+            "gemini-3-flash",
+            "flash-3",
+            "google/gemini-3-flash-preview",
+        ],
+    ),
     "gemini-2.5-pro": _gemini_caps(
         "gemini-2.5-pro",
         "Gemini 2.5 Pro (CLI)",
         score=18,
         ctx=2_000_000,
         out=65_536,
-        aliases=["gemini-pro", "pro", "gemini2.5-pro"],
+        aliases=["gemini-2.5", "gemini-2.5-pro", "gemini2.5-pro"],
     ),
     "gemini-2.5-flash": _gemini_caps(
         "gemini-2.5-flash",
@@ -96,7 +124,7 @@ class GeminiCliProvider(CliProvider):
         logger.debug("Built Gemini CLI args: %s ... (prompt hidden)", args[0:1] + ["-p", "<hidden>", "-m", model, "-o", "json"])
         return args
 
-    def _parse_response(self, output: CliOutput) -> ModelResponse:
+    def _parse_response(self, output: CliOutput, requested_model: str | None = None) -> ModelResponse:
         """Parse `gemini -o json` output into a ModelResponse."""
         try:
             data = json.loads(output.raw_output)
@@ -117,7 +145,11 @@ class GeminiCliProvider(CliProvider):
             usage["output_tokens"] = tokens.get("candidates", 0)
             usage["total_tokens"] = tokens.get("total", 0)
 
-        model_name = next(iter(models_stats.keys()), "gemini-unknown") if models_stats else "gemini-unknown"
+        # Prefer the model name reported in CLI stats; fall back to the requested
+        # model so telemetry reflects what the caller actually asked for instead
+        # of an opaque sentinel string.
+        fallback = requested_model or "gemini-unknown"
+        model_name = next(iter(models_stats.keys()), fallback) if models_stats else fallback
 
         metadata = {
             "session_id": data.get("session_id"),
@@ -163,6 +195,6 @@ class GeminiCliProvider(CliProvider):
             raise RuntimeError(f"Gemini CLI exited with code {output.exit_code}: {output.stderr}")
 
         try:
-            return self._parse_response(output)
+            return self._parse_response(output, requested_model=resolved_model)
         except CliError as e:
             raise RuntimeError(f"Failed to parse Gemini CLI response: {e}") from e

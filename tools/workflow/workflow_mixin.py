@@ -20,6 +20,7 @@ Features:
 - Comprehensive type annotations for IDE support
 """
 
+import inspect
 import json
 import logging
 import os
@@ -1489,7 +1490,10 @@ class BaseWorkflowMixin(ABC):
             for warning in temp_warnings:
                 logger.warning(warning)
 
-            # Generate AI response - use request parameters if available
+            # Generate AI response - use request parameters if available.
+            # Provider implementations may be sync (OpenAICompatibleProvider) or async
+            # (GeminiCliProvider, CodexCliProvider). Await the result if it's a coroutine
+            # so expert analysis works against every provider.
             model_response = provider.generate_content(
                 prompt=prompt,
                 model_name=model_name,
@@ -1498,6 +1502,8 @@ class BaseWorkflowMixin(ABC):
                 thinking_mode=self.get_request_thinking_mode(request),
                 images=list(set(self.consolidated_findings.images)) if self.consolidated_findings.images else None,
             )
+            if inspect.iscoroutine(model_response):
+                model_response = await model_response
 
             if model_response.content:
                 content = model_response.content.strip()

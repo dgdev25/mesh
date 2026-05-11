@@ -34,8 +34,19 @@ class InMemoryStorage:
         self._store: dict[str, tuple[str, float]] = {}
         self._lock = threading.Lock()
         # Match Redis behavior: cleanup interval based on conversation timeout
-        # Run cleanup at 1/10th of timeout interval (e.g., 18 mins for 3 hour timeout)
-        timeout_hours = int(get_env("CONVERSATION_TIMEOUT_HOURS", "3") or "3")
+        # Run cleanup at 1/10th of timeout interval (e.g., 18 mins for 3 hour timeout).
+        # Mirror conversation_memory.py's defensive parsing so a bad env value
+        # doesn't crash MCP server startup.
+        raw_timeout = (get_env("CONVERSATION_TIMEOUT_HOURS", "3") or "3").strip()
+        try:
+            timeout_hours = int(raw_timeout)
+            if timeout_hours <= 0:
+                raise ValueError("must be positive")
+        except ValueError:
+            logger.warning(
+                f"Invalid CONVERSATION_TIMEOUT_HOURS value ({raw_timeout!r}), using default of 3 hours"
+            )
+            timeout_hours = 3
         self._cleanup_interval = (timeout_hours * 3600) // 10
         self._cleanup_interval = max(300, self._cleanup_interval)  # Minimum 5 minutes
         self._shutdown = False

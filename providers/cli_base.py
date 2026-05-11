@@ -124,9 +124,11 @@ class CliProvider(ModelProvider):
         except FileNotFoundError as e:
             duration_ms = (time.time() - start_time) * 1000
             raise CliNotFoundError(f"CLI binary not found: {args[0]}") from e
-        except asyncio.CancelledError as e:
-            duration_ms = (time.time() - start_time) * 1000
-            raise CliError(f"CLI execution cancelled: {command_str}") from e
+        except asyncio.CancelledError:
+            # Cancellation must propagate so the caller (or asyncio.wait_for) can
+            # complete its cancellation handshake. Suppressing it here led to
+            # coroutines hanging after a tool timeout.
+            raise
         except (CliTimeoutError, CliNotFoundError):
             # Re-raise our own exceptions unchanged
             raise
