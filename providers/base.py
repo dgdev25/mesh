@@ -1,5 +1,6 @@
 """Base interfaces and common behaviour for model providers."""
 
+import asyncio
 import logging
 import time
 from abc import ABC, abstractmethod
@@ -145,7 +146,7 @@ class ModelProvider(ABC):
     # Request execution
     # ------------------------------------------------------------------
     @abstractmethod
-    def generate_content(
+    async def generate_content(
         self,
         prompt: str,
         model_name: str,
@@ -240,7 +241,7 @@ class ModelProvider(ABC):
 
         return any(indicator in error_str for indicator in retryable_indicators)
 
-    def _run_with_retries(
+    async def _run_with_retries(
         self,
         operation: Callable[[], Any],
         *,
@@ -294,7 +295,7 @@ class ModelProvider(ABC):
                         exc,
                         delay,
                     )
-                    time.sleep(delay)
+                    await asyncio.sleep(delay)
                 else:
                     logger.warning(
                         "%s retryable error (attempt %s/%s): %s. Retrying...",

@@ -383,7 +383,7 @@ class OpenAICompatibleProvider(ModelProvider):
 
         return content
 
-    def _generate_with_responses_endpoint(
+    async def _generate_with_responses_endpoint(
         self,
         model_name: str,
         messages: list,
@@ -482,7 +482,7 @@ class OpenAICompatibleProvider(ModelProvider):
             )
 
         try:
-            return self._run_with_retries(
+            return await self._run_with_retries(
                 operation=_attempt,
                 max_attempts=max_retries,
                 delays=retry_delays,
@@ -494,7 +494,7 @@ class OpenAICompatibleProvider(ModelProvider):
             logging.error(error_msg)
             raise RuntimeError(error_msg) from exc
 
-    def generate_content(
+    async def generate_content(
         self,
         prompt: str,
         model_name: str,
@@ -518,13 +518,12 @@ class OpenAICompatibleProvider(ModelProvider):
         Returns:
             ModelResponse with generated content and metadata
         """
-        # Validate model name against allow-list
-        if not self.validate_model_name(model_name):
-            raise ValueError(f"Model '{model_name}' not in allowed models list. Allowed models: {self.allowed_models}")
-
+        # Validate model name and retrieve capabilities in one call
         capabilities: ModelCapabilities | None
         try:
             capabilities = self.get_capabilities(model_name)
+        except ValueError:
+            raise ValueError(f"Model '{model_name}' not in allowed models list. Allowed models: {self.allowed_models}")
         except Exception as exc:
             logging.debug(f"Falling back to generic capabilities for {model_name}: {exc}")
             capabilities = None
@@ -620,7 +619,7 @@ class OpenAICompatibleProvider(ModelProvider):
         if use_responses_api:
             # These models require the /v1/responses endpoint for stateful context
             # If it fails, we should not fall back to chat/completions
-            return self._generate_with_responses_endpoint(
+            return await self._generate_with_responses_endpoint(
                 model_name=resolved_model,
                 messages=messages,
                 temperature=temperature,
@@ -656,7 +655,7 @@ class OpenAICompatibleProvider(ModelProvider):
             )
 
         try:
-            return self._run_with_retries(
+            return await self._run_with_retries(
                 operation=_attempt,
                 max_attempts=max_retries,
                 delays=retry_delays,

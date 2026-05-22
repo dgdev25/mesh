@@ -450,10 +450,10 @@ def configure_providers():
                     try:
                         if provider and hasattr(provider, "close"):
                             provider.close()
-                    except Exception:
-                        pass
-        except Exception:
-            pass
+                    except Exception as exc:
+                        logger.warning("Error closing provider during shutdown: %s", exc)
+        except Exception as exc:
+            logger.warning("Error during provider cleanup: %s", exc)
 
     atexit.register(cleanup_providers)
 
@@ -525,8 +525,8 @@ async def handle_list_tools() -> list[Tool]:
                 raw_name = client_info.get("name", "Unknown")
                 version = client_info.get("version", "Unknown")
                 mcp_activity_logger.info(f"MCP_CLIENT_INFO: {friendly_name} (raw={raw_name} v{version})")
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug("Failed to log MCP client info to activity log: %s", exc)
     except Exception as e:
         logger.debug(f"Could not log client info during list_tools: {e}")
     tools = []
@@ -619,8 +619,8 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextCon
     try:
         mcp_activity_logger = logging.getLogger("mcp_activity")
         mcp_activity_logger.info(f"TOOL_CALL: {name} with {len(arguments)} arguments")
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Failed to log tool call to activity log: %s", exc)
 
     # Handle thread context reconstruction if continuation_id is present
     if "continuation_id" in arguments and arguments["continuation_id"]:
@@ -635,8 +635,8 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextCon
         try:
             mcp_activity_logger = logging.getLogger("mcp_activity")
             mcp_activity_logger.info(f"CONVERSATION_RESUME: {name} resuming thread {continuation_id}")
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Failed to log conversation resume to activity log: %s", exc)
 
         arguments = await reconstruct_thread_context(arguments)
         logger.debug(f"[CONVERSATION_DEBUG] After thread reconstruction, arguments keys: {list(arguments.keys())}")
@@ -735,8 +735,8 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextCon
         try:
             mcp_activity_logger = logging.getLogger("mcp_activity")
             mcp_activity_logger.info(f"TOOL_COMPLETED: {name}")
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Failed to log tool completion to activity log: %s", exc)
         return result
 
     # Handle unknown tool requests gracefully
@@ -925,8 +925,8 @@ async def reconstruct_thread_context(arguments: dict[str, Any]) -> dict[str, Any
         try:
             mcp_activity_logger = logging.getLogger("mcp_activity")
             mcp_activity_logger.info(f"CONVERSATION_ERROR: Thread {continuation_id} not found or expired")
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Failed to log conversation error to activity log: %s", exc)
 
         # Return error asking CLI to restart conversation with full context
         raise ValueError(
@@ -1148,8 +1148,8 @@ async def reconstruct_thread_context(arguments: dict[str, Any]) -> dict[str, Any
             f"CONVERSATION_CONTINUATION: Thread {continuation_id} turn {len(context.turns)} - "
             f"{len(context.turns)} previous turns loaded"
         )
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Failed to log conversation continuation to activity log: %s", exc)
 
     return enhanced_arguments
 

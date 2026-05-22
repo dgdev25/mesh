@@ -4,7 +4,7 @@ Tests for dynamic context request and collaboration features
 
 import json
 import os
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -27,7 +27,8 @@ class TestDynamicContextRequests:
 
     @pytest.mark.asyncio
     @patch("tools.shared.base_tool.BaseTool.get_model_provider")
-    async def test_clarification_request_parsing(self, mock_get_provider, analyze_tool):
+    @patch("tools.workflow.workflow_mixin.BaseWorkflowMixin._call_expert_analysis")
+    async def test_clarification_request_parsing(self, mock_expert_analysis, mock_get_provider, analyze_tool):
         """Test that tools correctly parse clarification requests"""
         # Mock model to return a clarification request
         clarification_json = json.dumps(
@@ -41,10 +42,15 @@ class TestDynamicContextRequests:
 
         mock_provider = create_mock_provider()
         mock_provider.get_provider_type.return_value = Mock(value="google")
-        mock_provider.generate_content.return_value = Mock(
+        mock_provider.generate_content = AsyncMock(return_value=Mock(
             content=clarification_json, usage={}, model_name="gemini-2.5-flash", metadata={}
-        )
+        ))
         mock_get_provider.return_value = mock_provider
+        mock_expert_analysis.return_value = {
+            "status": "analysis_complete",
+            "raw_analysis": clarification_json,
+            "format": "text",
+        }
 
         result = await analyze_tool.execute(
             {
@@ -122,9 +128,9 @@ class TestDynamicContextRequests:
 
         mock_provider = create_mock_provider()
         mock_provider.get_provider_type.return_value = Mock(value="google")
-        mock_provider.generate_content.return_value = Mock(
+        mock_provider.generate_content = AsyncMock(return_value=Mock(
             content=malformed_json, usage={}, model_name="gemini-2.5-flash", metadata={}
-        )
+        ))
         mock_get_provider.return_value = mock_provider
 
         result = await analyze_tool.execute(
@@ -370,9 +376,9 @@ class TestCollaborationWorkflow:
 
         mock_provider = create_mock_provider()
         mock_provider.get_provider_type.return_value = Mock(value="google")
-        mock_provider.generate_content.return_value = Mock(
+        mock_provider.generate_content = AsyncMock(return_value=Mock(
             content=clarification_json, usage={}, model_name="gemini-2.5-flash", metadata={}
-        )
+        ))
         mock_get_provider.return_value = mock_provider
 
         # Mock expert analysis to avoid actual API calls
@@ -436,9 +442,9 @@ class TestCollaborationWorkflow:
 
         mock_provider = create_mock_provider()
         mock_provider.get_provider_type.return_value = Mock(value="google")
-        mock_provider.generate_content.return_value = Mock(
+        mock_provider.generate_content = AsyncMock(return_value=Mock(
             content=clarification_json, usage={}, model_name="gemini-2.5-flash", metadata={}
-        )
+        ))
         mock_get_provider.return_value = mock_provider
 
         # Mock expert analysis to avoid actual API calls
@@ -491,9 +497,9 @@ class TestCollaborationWorkflow:
         **Root Cause:** The config.py file shows the database host is set to 'localhost' but the database is running on a different server.
         """
 
-        mock_provider.generate_content.return_value = Mock(
+        mock_provider.generate_content = AsyncMock(return_value=Mock(
             content=final_response, usage={}, model_name="gemini-2.5-flash", metadata={}
-        )
+        ))
 
         # Update expert analysis mock for second call
         mock_expert_analysis.return_value = {

@@ -1,6 +1,6 @@
 """Helper functions for test mocking."""
 
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 from providers.shared import ModelCapabilities, ProviderType, RangeTemperatureConstraint
 
@@ -27,7 +27,7 @@ def create_mock_provider(model_name="gemini-2.5-flash", context_window=1_048_576
     mock_provider.get_provider_type.return_value = ProviderType.GEMINI_CLI
     mock_provider.validate_model_name.return_value = True
 
-    # Set up generate_content response
+    # Set up generate_content response (async — all providers implement async generate_content)
     mock_response = Mock()
     mock_response.content = "Test response"
     mock_response.usage = {"input_tokens": 10, "output_tokens": 20}
@@ -36,6 +36,6 @@ def create_mock_provider(model_name="gemini-2.5-flash", context_window=1_048_576
     mock_response.provider = ProviderType.GEMINI_CLI
     mock_response.metadata = {"finish_reason": "STOP"}
 
-    mock_provider.generate_content.return_value = mock_response
+    mock_provider.generate_content = AsyncMock(return_value=mock_response)
 
     return mock_provider
